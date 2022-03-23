@@ -1,0 +1,19 @@
+{
+  // 使用 IntelliSense 了解相关属性。 
+  // 悬停以查看现有属性的描述。
+  // 欲了解更多信息，请访问: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Python: 当前文件",
+      "type": "python",
+      "request": "launch",
+      "program": "${file}",
+      "console": "integratedTerminal",
+      "justMyCode": true,
+      "args": ["--verbose","train","--train_glob=/home/ll/END-TO-END-OPTIMIZED-IMAGE-COMPRESSION/image/*JPEG"] // 训练
+      // "args": ["--verbose","compress","./examples/kodim13.png", "compressed.tfci"] // 压缩一张图
+      // python bls2017.py --verbose compress /home/ll/END-TO-END-OPTIMIZED-IMAGE-COMPRESSION/kodim13.png compressed.tfci
+    }  
+  ]
+}
