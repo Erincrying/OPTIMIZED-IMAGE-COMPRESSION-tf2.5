@@ -36,3 +36,11 @@ ipython_config.py
 .AppleDouble
 .LSOverride
 ._*
+
+# train
+# *.png
+*.JPEG
+*.dlqx-hzsd
+# *.meta
+# *.index
+# *.pbtxt

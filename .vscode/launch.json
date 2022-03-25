@@ -11,7 +11,8 @@
       "program": "${file}",
       "console": "integratedTerminal",
       "justMyCode": true,
-      "args": ["--verbose","train","--train_glob=/home/ll/END-TO-END-OPTIMIZED-IMAGE-COMPRESSION/image/*JPEG"] // 训练
+      "args": ["--verbose","train"] // 训练
+      // "args": ["--verbose","train","--train_glob=/home/ll/END-TO-END-OPTIMIZED-IMAGE-COMPRESSION/image/*JPEG"] // 训练
       // "args": ["--verbose","compress","./examples/kodim13.png", "compressed.tfci"] // 压缩一张图
       // python bls2017.py --verbose compress /home/ll/END-TO-END-OPTIMIZED-IMAGE-COMPRESSION/kodim13.png compressed.tfci
     }  

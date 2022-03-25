@@ -59,6 +59,13 @@ class AnalysisTransform(tf.keras.Sequential):
     super().__init__(name="analysis")
     self.add(tf.keras.layers.Lambda(lambda x: x / 255.))
     self.add(tfc.SignalConv2D(
+        # num_filters滤波器个数,决定输出特征图的通道数，例如36，输出则为[256,256,36]
+        # (9, 9)卷积核尺寸
+        # corr=True卷积/互相关
+        # strides_down下采样步长
+        # same_zeros0填充
+        # use_bias:Boolean, whether an additive constant will be applied to each output channel.
+        # 激活函数GDN
         num_filters, (9, 9), name="layer_0", corr=True, strides_down=4,
         padding="same_zeros", use_bias=True,
         activation=tfc.GDN(name="gdn_0")))
@@ -105,13 +112,17 @@ class BLS2017Model(tf.keras.Model):
 
   def call(self, x, training):
     """Computes rate and distortion losses."""
+    # 该库中的熵模型类简化了设计率失真优化代码的过程。在训练期间，它们的行为类似于似然模型。
     entropy_model = tfc.ContinuousBatchedEntropyModel(
         self.prior, coding_rank=3, compression=False)
     y = self.analysis_transform(x)
     y_hat, bits = entropy_model(y, training=training)
     x_hat = self.synthesis_transform(y_hat)
     # Total number of bits divided by total number of pixels.
+    #  tf.reduce_prod 计算一个张量的各个维度上元素的乘积.（长乘宽）
     num_pixels = tf.cast(tf.reduce_prod(tf.shape(x)[:-1]), bits.dtype)
+    # 码率
+    # 码率的单位是bpp，每像素占的bit
     bpp = tf.reduce_sum(bits) / num_pixels
     # Mean squared error across pixels.
     mse = tf.reduce_mean(tf.math.squared_difference(x, x_hat))
@@ -165,7 +176,9 @@ class BLS2017Model(tf.keras.Model):
   def compress(self, x):
     """Compresses an image."""
     # Add batch dimension and cast to float.
-    x = tf.expand_dims(x, 0)
+    # 维度变化（维度扩展主要是为了适配TensorFlow的函数。或许batch维度可以省略？）
+    # 假设输入矩阵维度为[256,256]
+    x = tf.expand_dims(x, 0) # tf.expand_dims增加维度
     x = tf.cast(x, dtype=tf.float32)
     y = self.analysis_transform(x)
     # Preserve spatial shapes of both image and latents.
@@ -213,43 +226,49 @@ def get_dataset(name, split, args):
 
 
 def get_custom_dataset(split, args):
-  """Creates input data pipeline from custom PNG images."""
+  """Creates input data pipeline from custom PNG images.从自定义PNG图像创建输入数据管道。"""
   with tf.device("/cpu:0"):
-    files = glob.glob(args.train_glob)
+    files = glob.glob(args.train_glob) # args.train_glob路径字符串,类型list
     if not files:
       raise RuntimeError(f"No training images found with glob "
                          f"'{args.train_glob}'.")
-    dataset = tf.data.Dataset.from_tensor_slices(files)
-    dataset = dataset.shuffle(len(files), reshuffle_each_iteration=True)
+    dataset = tf.data.Dataset.from_tensor_slices(files) # from_tensor_slices(从tensor切片读取)
+    dataset = dataset.shuffle(len(files), reshuffle_each_iteration=True) # 先shuffle再batch提高随机度
     if split == "train":
       dataset = dataset.repeat()
     dataset = dataset.map(
+        # tf.random_crop随机地将张量裁剪为给定的大小.以一致选择的偏移量将一个形状 size 部分从 value 中切出.需要的条件：value.shape >= size.
+        # lambda x
+        # lambda本质上是个函数功能，是个匿名的函数，表达形式和用法均与一般函数有所不同。普通的函数可以写简单的也可以写复杂的，但lambda函数一般在一行内实现，是个非常简单的函数功能体。
+        # 那么，什么时候需要将函数写成lambda形式？
+        # 函数功能简单，一句话就可以实现
+        # 偶而性使用，不需要考虑复用
         lambda x: crop_image(read_png(x), args.patchsize),
         num_parallel_calls=args.preprocess_threads)
-    dataset = dataset.batch(args.batchsize, drop_remainder=True)
+    dataset = dataset.batch(args.batchsize, drop_remainder=True) # 分成 总数/batchsize 个batch
   return dataset
 
 
 def train(args):
-  """Instantiates and trains the model."""
+  """Instantiates and trains the model.实例化并训练模型。"""
   if args.check_numerics:
-    tf.debugging.enable_check_numerics()
+    tf.debugging.enable_check_numerics() # 张量数字有效检查
 
   model = BLS2017Model(args.lmbda, args.num_filters)
   model.compile(
       optimizer=tf.keras.optimizers.Adam(learning_rate=1e-4),
   )
 
-  if args.train_glob:
+  if args.train_glob: # 给了数据集路径
     train_dataset = get_custom_dataset("train", args)
     validation_dataset = get_custom_dataset("validation", args)
-  else:
+  else: # 没给数据集路径，默认下载clic数据集
     train_dataset = get_dataset("clic", "train", args)
     validation_dataset = get_dataset("clic", "validation", args)
   validation_dataset = validation_dataset.take(args.max_validation_steps)
 
   model.fit(
-      train_dataset.prefetch(8),
+      train_dataset.prefetch(8), # 开启预加载数据
       epochs=args.epochs,
       steps_per_epoch=args.steps_per_epoch,
       validation_data=validation_dataset.cache(),
@@ -263,6 +282,7 @@ def train(args):
       ],
       verbose=int(args.verbose),
   )
+  print(args.model_path, 'args.model_path')
   model.save(args.model_path)
 
 
@@ -319,8 +339,10 @@ def decompress(args):
   write_png(args.output_file, x_hat)
 
 
+''' 参数设置 '''
 def parse_args(argv):
   """Parses command line arguments."""
+  # ArgumentParser 对象包含将命令行解析成 Python 数据类型所需的全部信息
   parser = argparse_flags.ArgumentParser(
       formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
@@ -329,7 +351,8 @@ def parse_args(argv):
       "--verbose", "-V", action="store_true",
       help="Report progress and metrics when training or compressing.")
   parser.add_argument(
-      "--model_path", default="bls2017",
+      "--model_path", default="./bls2017Model",
+      # "--model_path", default="bls2017",
       help="Path where to save/load the trained model.")
   subparsers = parser.add_subparsers(
       title="commands", dest="command",
@@ -388,7 +411,8 @@ def parse_args(argv):
       help="Maximum number of batches to use for validation. If -1, use one "
            "patch from each image in the training set.")
   train_cmd.add_argument(
-      "--preprocess_threads", type=int, default=16,
+      # 进程数（默认16）
+      "--preprocess_threads", type=int, default=4,
       help="Number of CPU threads to use for parallel decoding of training "
            "images.")
   train_cmd.add_argument(
