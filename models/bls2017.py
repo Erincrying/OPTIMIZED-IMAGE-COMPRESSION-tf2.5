@@ -53,6 +53,7 @@ def write_png(filename, image):
 
 
 class AnalysisTransform(tf.keras.Sequential):
+  # 使用tf.keras.Sequential()来搭建神经网络
   """The analysis transform."""
 
   def __init__(self, num_filters):
@@ -107,7 +108,7 @@ class BLS2017Model(tf.keras.Model):
     self.lmbda = lmbda
     self.analysis_transform = AnalysisTransform(num_filters)
     self.synthesis_transform = SynthesisTransform(num_filters)
-    self.prior = tfc.NoisyDeepFactorized(batch_shape=(num_filters,))
+    self.prior = tfc.NoisyDeepFactorized(batch_shape=(num_filters,)) #先验概率
     self.build((None, None, None, 3))
 
   def call(self, x, training):
@@ -126,6 +127,7 @@ class BLS2017Model(tf.keras.Model):
     bpp = tf.reduce_sum(bits) / num_pixels
     # Mean squared error across pixels.
     mse = tf.reduce_mean(tf.math.squared_difference(x, x_hat))
+    print(mse, 'mse')
     # The rate-distortion Lagrangian.
     loss = bpp + self.lmbda * mse
     return loss, bpp, mse
@@ -151,6 +153,7 @@ class BLS2017Model(tf.keras.Model):
   def predict_step(self, x):
     raise NotImplementedError("Prediction API is not supported.")
 
+  # model.compile()方法来配置训练方法
   def compile(self, **kwargs):
     super().compile(
         loss=None,
@@ -159,12 +162,13 @@ class BLS2017Model(tf.keras.Model):
         weighted_metrics=None,
         **kwargs,
     )
-    self.loss = tf.keras.metrics.Mean(name="loss")
+    self.loss = tf.keras.metrics.Mean(name="loss") # tf.keras.metrics.Mean计算给定值的（加权）平均值。
     self.bpp = tf.keras.metrics.Mean(name="bpp")
     self.mse = tf.keras.metrics.Mean(name="mse")
 
+  # 执行训练过程
   def fit(self, *args, **kwargs):
-    retval = super().fit(*args, **kwargs)
+    retval = super().fit(*args, **kwargs) # 返回值
     # After training, fix range coding tables.
     self.entropy_model = tfc.ContinuousBatchedEntropyModel(
         self.prior, coding_rank=3, compression=True)
@@ -200,31 +204,33 @@ class BLS2017Model(tf.keras.Model):
     # Then cast back to 8-bit integer.
     return tf.saturate_cast(tf.round(x_hat), tf.uint8)
 
-
+''' 过滤图片尺寸 '''
 def check_image_size(image, patchsize):
   shape = tf.shape(image)
-  return shape[0] >= patchsize and shape[1] >= patchsize and shape[-1] == 3
+  return shape[0] >= patchsize and shape[1] >= patchsize and shape[-1] == 3 # -1一定是最后一项，三通道
 
-
+''' 剪裁图片 '''
 def crop_image(image, patchsize):
   image = tf.image.random_crop(image, (patchsize, patchsize, 3))
   return tf.cast(image, tf.float32)
 
-
+''' 过滤+剪裁获取数据集 '''
 def get_dataset(name, split, args):
   """Creates input data pipeline from a TF Datasets dataset."""
   with tf.device("/cpu:0"):
     dataset = tfds.load(name, split=split, shuffle_files=True)
     if split == "train":
       dataset = dataset.repeat()
+    # 过滤器
     dataset = dataset.filter(
         lambda x: check_image_size(x["image"], args.patchsize))
+    # 裁剪
     dataset = dataset.map(
         lambda x: crop_image(x["image"], args.patchsize))
     dataset = dataset.batch(args.batchsize, drop_remainder=True)
   return dataset
 
-
+''' 根据给定地址获取数据集 '''
 def get_custom_dataset(split, args):
   """Creates input data pipeline from custom PNG images.从自定义PNG图像创建输入数据管道。"""
   with tf.device("/cpu:0"):
@@ -255,14 +261,15 @@ def train(args):
     tf.debugging.enable_check_numerics() # 张量数字有效检查
 
   model = BLS2017Model(args.lmbda, args.num_filters)
+  # 算bpp、mse、lose的加权平均
   model.compile(
-      optimizer=tf.keras.optimizers.Adam(learning_rate=1e-4),
+      optimizer=tf.keras.optimizers.Adam(learning_rate=1e-4), # 用优化器传入学习率进行梯度下降
   )
 
-  if args.train_glob: # 给了数据集路径
+  if args.train_glob: # 给了数据集路径（不过滤大小直接裁剪）
     train_dataset = get_custom_dataset("train", args)
     validation_dataset = get_custom_dataset("validation", args)
-  else: # 没给数据集路径，默认下载clic数据集
+  else: # 没给数据集路径，默认下载clic数据集（过滤大小、裁剪）
     train_dataset = get_dataset("clic", "train", args)
     validation_dataset = get_dataset("clic", "validation", args)
   validation_dataset = validation_dataset.take(args.max_validation_steps)
@@ -280,7 +287,7 @@ def train(args):
               histogram_freq=1, update_freq="epoch"),
           tf.keras.callbacks.experimental.BackupAndRestore(args.train_path),
       ],
-      verbose=int(args.verbose),
+      verbose=int(args.verbose), # 日志显示
   )
   print(args.model_path, 'args.model_path')
   model.save(args.model_path)
@@ -351,8 +358,8 @@ def parse_args(argv):
       "--verbose", "-V", action="store_true",
       help="Report progress and metrics when training or compressing.")
   parser.add_argument(
-      "--model_path", default="./bls2017Model",
-      # "--model_path", default="bls2017",
+      # "--model_path", default="./bls2017Model",
+      "--model_path", default="bls2017",
       help="Path where to save/load the trained model.")
   subparsers = parser.add_subparsers(
       title="commands", dest="command",
