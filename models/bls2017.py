@@ -39,6 +39,16 @@ import tensorflow as tf
 import tensorflow_datasets as tfds
 import tensorflow_compression as tfc
 
+import os
+os.environ['CUDA_VISIBLE_DEVICES'] = "0" # 使用gpu
+# 查看使用设备
+# from tensorflow.python.client import device_lib
+# print(device_lib.list_local_devices())
+# 申请gpu分配内存,解决显存不足的问题
+# config = tf.compat.v1.ConfigProto()
+# config.gpu_options.per_process_gpu_memory_fraction = 0.8  # 程序最多只能占用指定gpu50%的显存
+# config.gpu_options.allow_growth = True      #程序按需申请内存
+# sess = tf.compat.v1.Session(config = config)
 
 def read_png(filename):
   """Loads a PNG image file."""
@@ -103,7 +113,7 @@ class SynthesisTransform(tf.keras.Sequential):
 class BLS2017Model(tf.keras.Model):
   """Main model class."""
 
-  def __init__(self, lmbda, num_filters):
+  def __init__(self, lmbda, num_filters): # 这里的self就是实例化对象
     super().__init__()
     self.lmbda = lmbda
     self.analysis_transform = AnalysisTransform(num_filters)
@@ -153,7 +163,7 @@ class BLS2017Model(tf.keras.Model):
   def predict_step(self, x):
     raise NotImplementedError("Prediction API is not supported.")
 
-  # model.compile()方法来配置训练方法
+  # model.compile()方法用于在配置训练方法时，告知训练时用的优化器、损失函数和准确率评测标准
   def compile(self, **kwargs):
     super().compile(
         loss=None,
@@ -166,7 +176,7 @@ class BLS2017Model(tf.keras.Model):
     self.bpp = tf.keras.metrics.Mean(name="bpp")
     self.mse = tf.keras.metrics.Mean(name="mse")
 
-  # 执行训练过程
+  # 迭代训练模型
   def fit(self, *args, **kwargs):
     retval = super().fit(*args, **kwargs) # 返回值
     # After training, fix range coding tables.
@@ -261,7 +271,7 @@ def train(args):
     tf.debugging.enable_check_numerics() # 张量数字有效检查
 
   model = BLS2017Model(args.lmbda, args.num_filters)
-  # 算bpp、mse、lose的加权平均
+  # 配置训练方法，算bpp、mse、lose的加权平均
   model.compile(
       optimizer=tf.keras.optimizers.Adam(learning_rate=1e-4), # 用优化器传入学习率进行梯度下降
   )
@@ -276,7 +286,7 @@ def train(args):
 
   model.fit(
       train_dataset.prefetch(8), # 开启预加载数据
-      epochs=args.epochs,
+      epochs=args.epochs, # 上限迭代次数（这里设置的1000）
       steps_per_epoch=args.steps_per_epoch,
       validation_data=validation_dataset.cache(),
       validation_freq=1,
@@ -284,8 +294,8 @@ def train(args):
           tf.keras.callbacks.TerminateOnNaN(),
           tf.keras.callbacks.TensorBoard(
               log_dir=args.train_path,
-              histogram_freq=1, update_freq="epoch"),
-          tf.keras.callbacks.experimental.BackupAndRestore(args.train_path),
+              histogram_freq=1, update_freq="epoch"), # TensorBoard可视化
+          tf.keras.callbacks.experimental.BackupAndRestore(args.train_path), # 断点恢复
       ],
       verbose=int(args.verbose), # 日志显示
   )
@@ -358,8 +368,14 @@ def parse_args(argv):
       "--verbose", "-V", action="store_true",
       help="Report progress and metrics when training or compressing.")
   parser.add_argument(
-      # "--model_path", default="./bls2017Model",
-      "--model_path", default="bls2017",
+      # 训练
+      # "--model_path", default="bls2017",
+      # "--model_path", default=".bls2017_01", # 第一次训练或基于服务器输入命令压缩,根路径为models(在压缩是需要加上./models，因为根目录不同)
+      # "--model_path", default="bls2017_01", # 第一次训练
+      
+      # 压缩
+      # "--model_path", default="./models/bls2017",
+      "--model_path", default="./models/bls2017_01",
       help="Path where to save/load the trained model.")
   subparsers = parser.add_subparsers(
       title="commands", dest="command",
