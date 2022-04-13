@@ -303,6 +303,46 @@ def train(args):
   model.save(args.model_path)
 
 
+def compressAll(args):
+  """压缩文件夹的文件"""
+  print(args, 'args')
+    
+def perCompress(args):
+  """Compresses an image."""
+  # Load model and use it to compress the image.
+  # model = tf.keras.models.load_model(args.model_path)
+  # x = read_png(args.input_file)
+  # tensors = model.compress(x)
+
+  # # Write a binary file with the shape information and the compressed string.
+  # packed = tfc.PackedTensors()
+  # packed.pack(tensors)
+  # with open(args.output_file, "wb") as f:
+  #   f.write(packed.string)
+
+  # # If requested, decompress the image and measure performance.
+  # if args.verbose:
+  #   x_hat = model.decompress(*tensors)
+
+  #   # Cast to float in order to compute metrics.
+  #   x = tf.cast(x, tf.float32)
+  #   x_hat = tf.cast(x_hat, tf.float32)
+  #   mse = tf.reduce_mean(tf.math.squared_difference(x, x_hat))
+  #   psnr = tf.squeeze(tf.image.psnr(x, x_hat, 255))
+  #   msssim = tf.squeeze(tf.image.ssim_multiscale(x, x_hat, 255))
+  #   msssim_db = -10. * tf.math.log(1 - msssim) / tf.math.log(10.)
+
+  #   # The actual bits per pixel including entropy coding overhead.
+  #   num_pixels = tf.reduce_prod(tf.shape(x)[:-1])
+  #   bpp = len(packed.string) * 8 / num_pixels
+
+  #   print(f"Mean squared error: {mse:0.4f}")
+  #   print(f"PSNR (dB): {psnr:0.2f}")
+  #   print(f"Multiscale SSIM: {msssim:0.4f}")
+  #   print(f"Multiscale SSIM (dB): {msssim_db:0.2f}")
+  #   print(f"Bits per pixel: {bpp:0.4f}")
+
+# 原compress方法
 def compress(args):
   """Compresses an image."""
   # Load model and use it to compress the image.
@@ -464,6 +504,20 @@ def parse_args(argv):
         "output_file", nargs="?",
         help=f"Output filename (optional). If not provided, appends '{ext}' to "
              f"the input filename.")
+    
+  # 'compressAll' subcommand.
+  compressAll_cmd = subparsers.add_parser(
+      "compressAll",
+      formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+      description="读取文件下的文件进行压缩操作")
+  
+  # Arguments for 'compressAll'.
+  compressAll_cmd.add_argument(
+    "input_folder",
+    help="输入文件夹.")
+  compressAll_cmd.add_argument(
+    "output_folder",
+    help="输出文件夹.")
 
   # Parse arguments.
   args = parser.parse_args(argv[1:])
@@ -480,7 +534,10 @@ def main(args):
   elif args.command == "compress":
     if not args.output_file:
       args.output_file = args.input_file + ".tfci"
-    compress(args)
+      compress(args)
+      # compressAll(args)
+  elif args.command == "compressAll":
+    compressAll(args)
   elif args.command == "decompress":
     if not args.output_file:
       args.output_file = args.input_file + ".png"
