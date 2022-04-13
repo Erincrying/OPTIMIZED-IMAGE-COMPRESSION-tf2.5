@@ -39,6 +39,9 @@ import tensorflow as tf
 import tensorflow_datasets as tfds
 import tensorflow_compression as tfc
 
+from numpy import *
+import copy
+
 import os
 os.environ['CUDA_VISIBLE_DEVICES'] = "0" # 使用gpu
 # 查看使用设备
@@ -305,42 +308,87 @@ def train(args):
 
 def compressAll(args):
   """压缩文件夹的文件"""
-  print(args, 'args')
+  # print(args, 'args')
+  files = glob.glob(args.input_folder + '/*png')
+  # print(files, 'files')
+  perArgs = copy.copy(args) # 浅拷贝，不改变args的值
+  # print(perArgs, 'perArgs')
+  bpp_list = []
+  mse_list = []
+  psnr_list = []
+  mssim_list = []
+  msssim_db_list = []
+  # 循环遍历kodak数据集
+  for img in files:
+    # print(img, 'img')
+    # img为图片完整的相对路径
+    imgIndexFirst = img.find('/kodim') # 索引
+    imgIndexNext = img.find('.png')
+    imgName = img[imgIndexFirst: imgIndexNext] # 单独的图片文件名，如kodim01.png
+    # print(imgName, 'imgName') # 单独的图片文件名，如/kodim01
+    perArgs.input_file = img
+    perArgs.output_file = args.output_folder + imgName + '.tfci'
+    # print(perArgs, 'perArgs')
+    # print(args, 'args')
+    bpp, mse, psnr, msssim, msssim_db = perCompress(perArgs)
+    print(bpp, mse, psnr, msssim, msssim_db, 'bpp, mse, psnr, msssim, msssim_db')
+    bpp_list.append(bpp)
+    mse_list.append(mse)
+    psnr_list.append(psnr)
+    mssim_list.append(msssim)
+    msssim_db_list.append(msssim_db)
+  print(bpp_list, 'bpp_list')
+  print(mse_list, 'mse_list')
+  
+  bpp_average = mean(bpp_list)
+  mse_average = mean(mse_list)
+  psnr_average = mean(psnr_list)
+  mssim_average = mean(mssim_list)
+  msssim_db_average = mean(msssim_db_list)
+  
+  print(bpp_average, 'bpp_average')
+  print(mse_average, 'mse_average')
+  print(psnr_average, 'psnr_average')
+  print(mssim_average, 'mssim_average')
+  print(msssim_db_average, 'msssim_db_average')
+  
     
 def perCompress(args):
   """Compresses an image."""
   # Load model and use it to compress the image.
-  # model = tf.keras.models.load_model(args.model_path)
-  # x = read_png(args.input_file)
-  # tensors = model.compress(x)
+  model = tf.keras.models.load_model(args.model_path)
+  x = read_png(args.input_file)
+  tensors = model.compress(x)
 
-  # # Write a binary file with the shape information and the compressed string.
-  # packed = tfc.PackedTensors()
-  # packed.pack(tensors)
-  # with open(args.output_file, "wb") as f:
-  #   f.write(packed.string)
+  # Write a binary file with the shape information and the compressed string.
+  packed = tfc.PackedTensors()
+  packed.pack(tensors)
+  with open(args.output_file, "wb") as f:
+    f.write(packed.string)
 
-  # # If requested, decompress the image and measure performance.
-  # if args.verbose:
-  #   x_hat = model.decompress(*tensors)
+  # If requested, decompress the image and measure performance.
+  if args.verbose:
+    x_hat = model.decompress(*tensors)
 
-  #   # Cast to float in order to compute metrics.
-  #   x = tf.cast(x, tf.float32)
-  #   x_hat = tf.cast(x_hat, tf.float32)
-  #   mse = tf.reduce_mean(tf.math.squared_difference(x, x_hat))
-  #   psnr = tf.squeeze(tf.image.psnr(x, x_hat, 255))
-  #   msssim = tf.squeeze(tf.image.ssim_multiscale(x, x_hat, 255))
-  #   msssim_db = -10. * tf.math.log(1 - msssim) / tf.math.log(10.)
+    # Cast to float in order to compute metrics.
+    x = tf.cast(x, tf.float32)
+    x_hat = tf.cast(x_hat, tf.float32)
+    mse = tf.reduce_mean(tf.math.squared_difference(x, x_hat))
+    psnr = tf.squeeze(tf.image.psnr(x, x_hat, 255))
+    msssim = tf.squeeze(tf.image.ssim_multiscale(x, x_hat, 255))
+    msssim_db = -10. * tf.math.log(1 - msssim) / tf.math.log(10.)
 
-  #   # The actual bits per pixel including entropy coding overhead.
-  #   num_pixels = tf.reduce_prod(tf.shape(x)[:-1])
-  #   bpp = len(packed.string) * 8 / num_pixels
+    # The actual bits per pixel including entropy coding overhead.
+    num_pixels = tf.reduce_prod(tf.shape(x)[:-1])
+    bpp = len(packed.string) * 8 / num_pixels
 
-  #   print(f"Mean squared error: {mse:0.4f}")
-  #   print(f"PSNR (dB): {psnr:0.2f}")
-  #   print(f"Multiscale SSIM: {msssim:0.4f}")
-  #   print(f"Multiscale SSIM (dB): {msssim_db:0.2f}")
-  #   print(f"Bits per pixel: {bpp:0.4f}")
+    print(f"Mean squared error: {mse:0.4f}")
+    print(f"PSNR (dB): {psnr:0.2f}")
+    print(f"Multiscale SSIM: {msssim:0.4f}")
+    print(f"Multiscale SSIM (dB): {msssim_db:0.2f}")
+    print(f"Bits per pixel: {bpp:0.4f}")
+    
+    return bpp, mse, psnr, msssim, msssim_db
 
 # 原compress方法
 def compress(args):
@@ -534,8 +582,7 @@ def main(args):
   elif args.command == "compress":
     if not args.output_file:
       args.output_file = args.input_file + ".tfci"
-      compress(args)
-      # compressAll(args)
+    compress(args)
   elif args.command == "compressAll":
     compressAll(args)
   elif args.command == "decompress":
