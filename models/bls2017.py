@@ -29,7 +29,9 @@ parameters may be necessary. To compress images with published models, see
 
 This script requires TFC v2 (`pip install tensorflow-compression==2.*`).
 """
-
+# 使用gpu
+import os
+os.environ['CUDA_VISIBLE_DEVICES'] = "0" 
 import argparse
 import glob
 import sys
@@ -42,11 +44,9 @@ import tensorflow_compression as tfc
 from numpy import *
 import copy
 
-import os
-os.environ['CUDA_VISIBLE_DEVICES'] = "0" # 使用gpu
 # 查看使用设备
-# from tensorflow.python.client import device_lib
-# print(device_lib.list_local_devices())
+from tensorflow.python.client import device_lib
+print(device_lib.list_local_devices())
 # 申请gpu分配内存,解决显存不足的问题
 # config = tf.compat.v1.ConfigProto()
 # config.gpu_options.per_process_gpu_memory_fraction = 0.8  # 程序最多只能占用指定gpu50%的显存
@@ -140,7 +140,6 @@ class BLS2017Model(tf.keras.Model):
     bpp = tf.reduce_sum(bits) / num_pixels
     # Mean squared error across pixels.
     mse = tf.reduce_mean(tf.math.squared_difference(x, x_hat))
-    print(mse, 'mse')
     # The rate-distortion Lagrangian.
     loss = bpp + self.lmbda * mse
     return loss, bpp, mse
@@ -154,6 +153,7 @@ class BLS2017Model(tf.keras.Model):
     self.loss.update_state(loss)
     self.bpp.update_state(bpp)
     self.mse.update_state(mse)
+    print(self.bpp, 'train_step:self.bpp')
     return {m.name: m.result() for m in [self.loss, self.bpp, self.mse]}
 
   def test_step(self, x):
@@ -379,6 +379,7 @@ def perCompress(args):
     msssim_db = -10. * tf.math.log(1 - msssim) / tf.math.log(10.)
 
     # The actual bits per pixel including entropy coding overhead.
+    # 每像素的实际比特数，包括熵编码开销。
     num_pixels = tf.reduce_prod(tf.shape(x)[:-1])
     bpp = len(packed.string) * 8 / num_pixels
 
@@ -460,10 +461,14 @@ def parse_args(argv):
       # "--model_path", default="bls2017",
       # "--model_path", default=".bls2017_01", # 第一次训练或基于服务器输入命令压缩,根路径为models(在压缩是需要加上./models，因为根目录不同)
       # "--model_path", default="bls2017_01", # 第一次训练
+      # "--model_path", default="bls2017_02", # 第二次训练
+      "--model_path", default="bls2017_03", # 第二次训练
+      
       
       # 压缩
       # "--model_path", default="./models/bls2017",
-      "--model_path", default="./models/bls2017_01",
+      # "--model_path", default="./models/bls2017_01",
+      # "--model_path", default="./models/bls2017_02",
       help="Path where to save/load the trained model.")
   subparsers = parser.add_subparsers(
       title="commands", dest="command",
@@ -489,7 +494,8 @@ def parse_args(argv):
                   "set is simply a random sampling of patches from the "
                   "training set.")
   train_cmd.add_argument(
-      "--lambda", type=float, default=0.01, dest="lmbda",
+      # 0.01\0.02\0.04
+      "--lambda", type=float, default=0.04, dest="lmbda",
       help="Lambda for rate-distortion tradeoff.")
   train_cmd.add_argument(
       "--train_glob", type=str, default=None,
