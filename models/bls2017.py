@@ -32,12 +32,19 @@ This script requires TFC v2 (`pip install tensorflow-compression==2.*`).
 # 使用gpu
 import os
 os.environ['CUDA_VISIBLE_DEVICES'] = "0" 
+# 限制cpu核数
+import tensorflow as tf
+os.environ["OMP_NUM_THREADS"] = "3" # cpu核数
+tf.config.threading.set_intra_op_parallelism_threads(3)
+tf.config.threading.set_inter_op_parallelism_threads(3)
+
+
 import argparse
 import glob
 import sys
 from absl import app
 from absl.flags import argparse_flags
-import tensorflow as tf
+# import tensorflow as tf
 import tensorflow_datasets as tfds
 import tensorflow_compression as tfc
 
@@ -462,13 +469,14 @@ def parse_args(argv):
       # "--model_path", default=".bls2017_01", # 第一次训练或基于服务器输入命令压缩,根路径为models(在压缩是需要加上./models，因为根目录不同)
       # "--model_path", default="bls2017_01", # 第一次训练
       # "--model_path", default="bls2017_02", # 第二次训练
-      "--model_path", default="bls2017_03", # 第二次训练
+      # "--model_path", default="bls2017_03", # 第二次训练
       
       
       # 压缩
       # "--model_path", default="./models/bls2017",
       # "--model_path", default="./models/bls2017_01",
       # "--model_path", default="./models/bls2017_02",
+      "--model_path", default="./models/bls2017_03",
       help="Path where to save/load the trained model.")
   subparsers = parser.add_subparsers(
       title="commands", dest="command",
