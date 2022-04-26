@@ -16,16 +16,17 @@ psnr_myself = [31.049662, 32.634518, 33.925323, 34.46075, 34.891132]
 # 添加横纵坐标与标题
 plt.xlabel('bit rate [bit/px]')
 plt.ylabel('PSNR[db]')
-plt.title('')
+plt.title('rate–distortion')
 
 # 原文psnr
 plt.scatter(bpp_result, psnr_result)
-plt.plot(bpp_result, psnr_result, label = 'proposed')
+plt.plot(bpp_result, psnr_result, label='original')
 
 # 自己的psnr
 plt.scatter(bpp_myself, psnr_myself)
-plt.plot(bpp_myself, psnr_myself, label = 'myself')
+plt.plot(bpp_myself, psnr_myself, label='myself')
 # plt.plot(bpp_myself, psnr_myself, color='g', linestyle='-.', label = 'myself')
 #添加网格信息
 plt.grid(True, linestyle='--', alpha=0.5) #默认是True，风格设置为虚线，alpha为透明度
+plt.legend() # 为了能显示label
 plt.show()
