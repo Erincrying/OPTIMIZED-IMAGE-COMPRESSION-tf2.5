@@ -34,9 +34,9 @@ import os
 os.environ['CUDA_VISIBLE_DEVICES'] = "0" 
 # 限制cpu核数
 import tensorflow as tf
-os.environ["OMP_NUM_THREADS"] = "3" # cpu核数
-tf.config.threading.set_intra_op_parallelism_threads(3)
-tf.config.threading.set_inter_op_parallelism_threads(3)
+os.environ["OMP_NUM_THREADS"] = "5" # cpu核数
+tf.config.threading.set_intra_op_parallelism_threads(5)
+tf.config.threading.set_inter_op_parallelism_threads(5)
 
 
 import argparse
@@ -473,6 +473,8 @@ def parse_args(argv):
       # "--model_path", default="bls2017_04", # 第四次训练
       # "--model_path", default="bls2017_05", # 第五次训练
       # "--model_path", default="bls2017_06", # 第六次训练
+      "--model_path", default="bls2017_07", # 第七次训练
+      
       
       
       # 压缩
@@ -481,7 +483,9 @@ def parse_args(argv):
       # "--model_path", default="./models/bls2017_02",
       # "--model_path", default="./models/bls2017_03",
       # "--model_path", default="./models/bls2017_04",
-      "--model_path", default="./models/bls2017_05",
+      # "--model_path", default="./models/bls2017_05",
+      # "--model_path", default="./models/bls2017_06",
+      
       
       help="Path where to save/load the trained model.")
   subparsers = parser.add_subparsers(
@@ -508,8 +512,8 @@ def parse_args(argv):
                   "set is simply a random sampling of patches from the "
                   "training set.")
   train_cmd.add_argument(
-      # 0.01\0.02\0.04\0.06\0.09
-      "--lambda", type=float, default=0.09, dest="lmbda",
+      # 0.01\0.02\0.04\0.06\0.09\1.1\0.005
+      "--lambda", type=float, default=0.005, dest="lmbda",
       help="Lambda for rate-distortion tradeoff.")
   train_cmd.add_argument(
       "--train_glob", type=str, default=None,
