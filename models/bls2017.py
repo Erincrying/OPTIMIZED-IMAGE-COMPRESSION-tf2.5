@@ -34,9 +34,9 @@ import os
 os.environ['CUDA_VISIBLE_DEVICES'] = "0" 
 # 限制cpu核数
 import tensorflow as tf
-os.environ["OMP_NUM_THREADS"] = "5" # cpu核数
-tf.config.threading.set_intra_op_parallelism_threads(5)
-tf.config.threading.set_inter_op_parallelism_threads(5)
+os.environ["OMP_NUM_THREADS"] = "4" # cpu核数
+tf.config.threading.set_intra_op_parallelism_threads(4)
+tf.config.threading.set_inter_op_parallelism_threads(4)
 
 
 import argparse
@@ -473,7 +473,12 @@ def parse_args(argv):
       # "--model_path", default="bls2017_04", # 第四次训练
       # "--model_path", default="bls2017_05", # 第五次训练
       # "--model_path", default="bls2017_06", # 第六次训练
-      "--model_path", default="bls2017_07", # 第七次训练
+      # "--model_path", default="bls2017_07", # 第七次训练
+      
+      # 低码率点训练
+      # "--model_path", default="bls2017_new1",
+      "--model_path", default="bls2017_new2",
+      
       
       
       
@@ -485,6 +490,9 @@ def parse_args(argv):
       # "--model_path", default="./models/bls2017_04",
       # "--model_path", default="./models/bls2017_05",
       # "--model_path", default="./models/bls2017_06",
+      
+      # "--model_path", default="./models/bls2017_new1",
+      
       
       
       help="Path where to save/load the trained model.")
@@ -512,8 +520,10 @@ def parse_args(argv):
                   "set is simply a random sampling of patches from the "
                   "training set.")
   train_cmd.add_argument(
-      # 0.01\0.02\0.04\0.06\0.09\1.1\0.005
-      "--lambda", type=float, default=0.005, dest="lmbda",
+      # 0.01\0.02\0.04\0.06\0.09\1.1\0.005 # 第一次失败的几个点
+      # 新增几个lambda0.0016、0.0032、0.0075对应滤波器数量num_filters=128
+      # 0.015、0.03、0.045，对应滤波器数量num_filters=192
+      "--lambda", type=float, default=0.0032, dest="lmbda",
       help="Lambda for rate-distortion tradeoff.")
   train_cmd.add_argument(
       "--train_glob", type=str, default=None,
@@ -521,10 +531,12 @@ def parse_args(argv):
            "expand to a list of RGB images in PNG format. If unspecified, the "
            "CLIC dataset from TensorFlow Datasets is used.")
   train_cmd.add_argument(
-      "--num_filters", type=int, default=128,
+      "--num_filters", type=int, default=128, # 低码率
+      # "--num_filters", type=int, default=192, # 高码率
       help="Number of filters per layer.")
   train_cmd.add_argument(
-      "--train_path", default="/tmp/train_bls2017",
+      # "--train_path", default="/tmp/train_bls2017",
+      "--train_path", default="/tmp/train_bls2017_testlog",
       help="Path where to log training metrics for TensorBoard and back up "
            "intermediate model checkpoints.")
   train_cmd.add_argument(
