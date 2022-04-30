@@ -38,6 +38,11 @@ os.environ["OMP_NUM_THREADS"] = "4" # cpu核数
 tf.config.threading.set_intra_op_parallelism_threads(4)
 tf.config.threading.set_inter_op_parallelism_threads(4)
 
+# 申请gpu分配内存
+config = tf.compat.v1.ConfigProto()
+config.gpu_options.per_process_gpu_memory_fraction = 0.5  # 程序最多只能占用指定gpu50%的显存
+# config.gpu_options.allow_growth = True  # 设置动态分配GPU内存（可选）
+sess = tf.compat.v1.Session(config = config)
 
 import argparse
 import glob
@@ -54,11 +59,7 @@ import copy
 # 查看使用设备
 from tensorflow.python.client import device_lib
 print(device_lib.list_local_devices())
-# 申请gpu分配内存,解决显存不足的问题
-# config = tf.compat.v1.ConfigProto()
-# config.gpu_options.per_process_gpu_memory_fraction = 0.8  # 程序最多只能占用指定gpu50%的显存
-# config.gpu_options.allow_growth = True      #程序按需申请内存
-# sess = tf.compat.v1.Session(config = config)
+
 
 def read_png(filename):
   """Loads a PNG image file."""
