@@ -478,7 +478,7 @@ def parse_args(argv):
       
       # 低码率点训练
       # "--model_path", default="bls2017_new1",
-      "--model_path", default="bls2017_new2",
+      # "--model_path", default="bls2017_new2",
       
       
       
@@ -493,6 +493,8 @@ def parse_args(argv):
       # "--model_path", default="./models/bls2017_06",
       
       # "--model_path", default="./models/bls2017_new1",
+      "--model_path", default="./models/bls2017_new2",
+      
       
       
       
