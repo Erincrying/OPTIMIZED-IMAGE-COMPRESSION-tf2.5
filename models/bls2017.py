@@ -41,7 +41,7 @@ tf.config.threading.set_inter_op_parallelism_threads(4)
 # 申请gpu分配内存
 config = tf.compat.v1.ConfigProto()
 config.gpu_options.per_process_gpu_memory_fraction = 0.5  # 程序最多只能占用指定gpu50%的显存
-# config.gpu_options.allow_growth = True  # 设置动态分配GPU内存（可选）
+config.gpu_options.allow_growth = True  # 设置动态分配GPU内存（可选）
 sess = tf.compat.v1.Session(config = config)
 
 import argparse
@@ -479,6 +479,8 @@ def parse_args(argv):
       # 低码率点训练
       # "--model_path", default="bls2017_new1",
       # "--model_path", default="bls2017_new2",
+      # "--model_path", default="bls2017_new3",
+      
       
       
       
@@ -493,7 +495,8 @@ def parse_args(argv):
       # "--model_path", default="./models/bls2017_06",
       
       # "--model_path", default="./models/bls2017_new1",
-      "--model_path", default="./models/bls2017_new2",
+      # "--model_path", default="./models/bls2017_new2",
+      "--model_path", default="./models/bls2017_new3",
       
       
       
@@ -526,7 +529,7 @@ def parse_args(argv):
       # 0.01\0.02\0.04\0.06\0.09\1.1\0.005 # 第一次失败的几个点
       # 新增几个lambda0.0016、0.0032、0.0075对应滤波器数量num_filters=128
       # 0.015、0.03、0.045，对应滤波器数量num_filters=192
-      "--lambda", type=float, default=0.0032, dest="lmbda",
+      "--lambda", type=float, default=0.0075, dest="lmbda",
       help="Lambda for rate-distortion tradeoff.")
   train_cmd.add_argument(
       "--train_glob", type=str, default=None,
