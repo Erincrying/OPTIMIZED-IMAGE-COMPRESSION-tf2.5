@@ -485,7 +485,8 @@ def parse_args(argv):
       # "--model_path", default="bls2017_new5",
       # "--model_path", default="bls2017_new6",
       
-      
+      # 效果不好的三个点
+      # "--model_path", default="bls2017_model/bls2017_renew2",
       
       
       
@@ -506,8 +507,10 @@ def parse_args(argv):
       # "--model_path", default="./models/bls2017_new3",
       # "--model_path", default="./models/bls2017_new4",
       # "--model_path", default="./models/bls2017_new5",
-      "--model_path", default="./models/bls2017_new6",
+      # "--model_path", default="./models/bls2017_new6",
       
+      # 效果不好的三个点
+      "--model_path", default="./models/bls2017_model/bls2017_renew2",
       
       
       
@@ -542,7 +545,7 @@ def parse_args(argv):
       # 0.01\0.02\0.04\0.06\0.09\1.1\0.005 # 第一次失败的几个点
       # 新增几个lambda0.0016、0.0032、0.0075对应滤波器数量num_filters=128
       # 0.015、0.03、0.045，对应滤波器数量num_filters=192
-      "--lambda", type=float, default=0.045, dest="lmbda",
+      "--lambda", type=float, default=0.0032, dest="lmbda",
       help="Lambda for rate-distortion tradeoff.")
   train_cmd.add_argument(
       "--train_glob", type=str, default=None,
@@ -550,8 +553,8 @@ def parse_args(argv):
            "expand to a list of RGB images in PNG format. If unspecified, the "
            "CLIC dataset from TensorFlow Datasets is used.")
   train_cmd.add_argument(
-      # "--num_filters", type=int, default=128, # 低码率
-      "--num_filters", type=int, default=192, # 高码率
+      "--num_filters", type=int, default=128, # 低码率
+      # "--num_filters", type=int, default=192, # 高码率
       help="Number of filters per layer.")
   train_cmd.add_argument(
       # "--train_path", default="/tmp/train_bls2017",
@@ -578,7 +581,7 @@ def parse_args(argv):
            "patch from each image in the training set.")
   train_cmd.add_argument(
       # 进程数（默认16）
-      "--preprocess_threads", type=int, default=4,
+      "--preprocess_threads", type=int, default=16,
       help="Number of CPU threads to use for parallel decoding of training "
            "images.")
   train_cmd.add_argument(
