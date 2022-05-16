@@ -487,6 +487,8 @@ def parse_args(argv):
       
       # 效果不好的三个点
       # "--model_path", default="bls2017_model/bls2017_renew2",
+      # "--model_path", default="bls2017_model/bls2017_renew3",
+      
       
       
       
@@ -510,7 +512,9 @@ def parse_args(argv):
       # "--model_path", default="./models/bls2017_new6",
       
       # 效果不好的三个点
-      "--model_path", default="./models/bls2017_model/bls2017_renew2",
+      # "--model_path", default="./models/bls2017_model/bls2017_renew2",
+      "--model_path", default="./models/bls2017_model/bls2017_renew3",
+      
       
       
       
@@ -545,7 +549,7 @@ def parse_args(argv):
       # 0.01\0.02\0.04\0.06\0.09\1.1\0.005 # 第一次失败的几个点
       # 新增几个lambda0.0016、0.0032、0.0075对应滤波器数量num_filters=128
       # 0.015、0.03、0.045，对应滤波器数量num_filters=192
-      "--lambda", type=float, default=0.0032, dest="lmbda",
+      "--lambda", type=float, default=0.0075, dest="lmbda",
       help="Lambda for rate-distortion tradeoff.")
   train_cmd.add_argument(
       "--train_glob", type=str, default=None,
