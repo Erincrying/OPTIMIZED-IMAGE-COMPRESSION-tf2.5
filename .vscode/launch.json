@@ -11,11 +11,11 @@
       "program": "${file}",
       "console": "integratedTerminal",
       "justMyCode": true,
-      // "args": ["--verbose","train"] // 训练
+      "args": ["--verbose","train"] // 训练
       // "args": ["--verbose","train","--train_glob=/home/ll/END-TO-END-OPTIMIZED-IMAGE-COMPRESSION/image/*JPEG"] // 训练(指定数据集)
       // "args": ["--verbose","compress","./models/kodim01.png", "./models/kodim01.tfci"] // 压缩一张图
       // "args": ["--verbose","compressAll","./models/kodak", "./models/testNew2"] // 压缩文件夹图片
-      "args": ["--verbose","compressAll","./models/kodak", "./models/bls2017compress/kodakRecompress_04"] // 压缩文件夹图片
+      // "args": ["--verbose","compressAll","./models/kodak", "./models/bls2017compress/kodakRecompress_04"] // 压缩文件夹图片
       // "args": ["--verbose","decompress","./models/kodakCompress_01/kodim01.tfci", "./models/kodakCompress_01/kodim01_decompress.png"] // 解压缩图片
 
 

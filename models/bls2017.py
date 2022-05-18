@@ -40,7 +40,7 @@ tf.config.threading.set_inter_op_parallelism_threads(4)
 
 # 申请gpu分配内存
 config = tf.compat.v1.ConfigProto()
-config.gpu_options.per_process_gpu_memory_fraction = 0.5  # 程序最多只能占用指定gpu50%的显存
+config.gpu_options.per_process_gpu_memory_fraction = 0.2  # 程序最多只能占用指定gpu50%的显存
 config.gpu_options.allow_growth = True  # 设置动态分配GPU内存（可选）
 sess = tf.compat.v1.Session(config = config)
 
@@ -249,8 +249,8 @@ def get_dataset(name, split, args):
     # 裁剪
     dataset = dataset.map(
         lambda x: crop_image(x["image"], args.patchsize))
-    dataset = dataset.batch(args.batchsize, drop_remainder=True)
-  return dataset
+    dataset = dataset.batch(args.batchsize, drop_remainder=True) # shape：(256,256,3)
+  return dataset # shape：(8， 256,256,3)
 
 ''' 根据给定地址获取数据集 '''
 def get_custom_dataset(split, args):
@@ -514,10 +514,13 @@ def parse_args(argv):
       # "--model_path", default="./models/bls2017_new5",
       # "--model_path", default="./models/bls2017_new6",
       
+      "--model_path", default="./models/bls2017_test",
+      
+      
       # 效果不好的三个点
       # "--model_path", default="./models/bls2017_model/bls2017_renew2",
       # "--model_path", default="./models/bls2017_model/bls2017_renew3",
-      "--model_path", default="./models/bls2017_model/bls2017_renew4",
+      # "--model_path", default="./models/bls2017_model/bls2017_renew4",
       
       
       
