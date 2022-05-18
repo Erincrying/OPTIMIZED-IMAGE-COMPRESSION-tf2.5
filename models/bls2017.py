@@ -76,7 +76,13 @@ def write_png(filename, image):
 class AnalysisTransform(tf.keras.Sequential):
   # 使用tf.keras.Sequential()来搭建神经网络
   """The analysis transform."""
+# kernel 形状 [filter_height, filter_width, in_channels, out_channels]=[5,5,1,36]
+# 输入矩阵 [batch, in_height, in_width, in_channels]=[1,256,256,1]
+# tf.nn.conv2d执行了以下操作：
 
+# 将滤波器（卷积核）展平为形状为[filter_height * filter_width * in_channels, output_channels]=[25,36]的二维矩阵.
+# 从输入张量中提取图像patch,以形成形状为[batch, out_height, out_width, filter_height * filter_width * in_channels]=[1,256,256,25]的虚拟张量.
+# 对于每个patch,右乘卷积核矩阵和图像patch矢量.
   def __init__(self, num_filters):
     super().__init__(name="analysis")
     self.add(tf.keras.layers.Lambda(lambda x: x / 255.))
@@ -85,7 +91,7 @@ class AnalysisTransform(tf.keras.Sequential):
         # (9, 9)卷积核尺寸
         # corr=True卷积/互相关
         # strides_down下采样步长
-        # same_zeros0填充
+        # same_zeros0填充，为了保证输入输出图片尺寸一致
         # use_bias:Boolean, whether an additive constant will be applied to each output channel.
         # 激活函数GDN
         num_filters, (9, 9), name="layer_0", corr=True, strides_down=4,
@@ -153,6 +159,7 @@ class BLS2017Model(tf.keras.Model):
     return loss, bpp, mse
 
   def train_step(self, x):
+    # x shape=(8,256,256,3)
     with tf.GradientTape() as tape:
       loss, bpp, mse = self(x, training=True)
     variables = self.trainable_variables
@@ -203,10 +210,10 @@ class BLS2017Model(tf.keras.Model):
     # Add batch dimension and cast to float.
     # 维度变化（维度扩展主要是为了适配TensorFlow的函数。或许batch维度可以省略？）
     # 假设输入矩阵维度为[256,256]
-    x = tf.expand_dims(x, 0) # tf.expand_dims增加维度
+    x = tf.expand_dims(x, 0) # tf.expand_dims增加维度，增加了批维度batch [1,256,256] 
     x = tf.cast(x, dtype=tf.float32)
     y = self.analysis_transform(x)
-    # Preserve spatial shapes of both image and latents.
+    # Preserve spatial shapes of both image and latents.保留图像和潜在对象的空间形状
     x_shape = tf.shape(x)[1:-1]
     y_shape = tf.shape(y)[1:-1]
     return self.entropy_model.compress(y), x_shape, y_shape
@@ -220,7 +227,7 @@ class BLS2017Model(tf.keras.Model):
     """Decompresses an image."""
     y_hat = self.entropy_model.decompress(string, y_shape)
     x_hat = self.synthesis_transform(y_hat)
-    # Remove batch dimension, and crop away any extraneous padding.
+    # Remove batch dimension, and crop away any extraneous padding.删除批次维度，并裁剪掉所有无关的填充。
     x_hat = x_hat[0, :x_shape[0], :x_shape[1], :]
     # Then cast back to 8-bit integer.
     return tf.saturate_cast(tf.round(x_hat), tf.uint8)
@@ -250,7 +257,7 @@ def get_dataset(name, split, args):
     dataset = dataset.map(
         lambda x: crop_image(x["image"], args.patchsize))
     dataset = dataset.batch(args.batchsize, drop_remainder=True) # shape：(256,256,3)
-  return dataset # shape：(8， 256,256,3)
+  return dataset # shape：(8, 256,256,3)
 
 ''' 根据给定地址获取数据集 '''
 def get_custom_dataset(split, args):
@@ -405,10 +412,11 @@ def compress(args):
   """Compresses an image."""
   # Load model and use it to compress the image.
   model = tf.keras.models.load_model(args.model_path)
-  x = read_png(args.input_file)
+  x = read_png(args.input_file) # kodak数据集shape=(512,768,3)
   tensors = model.compress(x)
 
   # Write a binary file with the shape information and the compressed string.
+  # 这里保存了shape
   packed = tfc.PackedTensors()
   packed.pack(tensors)
   with open(args.output_file, "wb") as f:
@@ -419,6 +427,7 @@ def compress(args):
     x_hat = model.decompress(*tensors)
 
     # Cast to float in order to compute metrics.
+    # x,x_hat都是原图形的shape
     x = tf.cast(x, tf.float32)
     x_hat = tf.cast(x_hat, tf.float32)
     mse = tf.reduce_mean(tf.math.squared_difference(x, x_hat))
@@ -493,7 +502,7 @@ def parse_args(argv):
       
       
       
-      
+      "--model_path", default="test",
       
       
       
@@ -513,8 +522,6 @@ def parse_args(argv):
       # "--model_path", default="./models/bls2017_new4",
       # "--model_path", default="./models/bls2017_new5",
       # "--model_path", default="./models/bls2017_new6",
-      
-      "--model_path", default="./models/bls2017_test",
       
       
       # 效果不好的三个点
