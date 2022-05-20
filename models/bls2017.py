@@ -292,7 +292,8 @@ def train(args):
   model = BLS2017Model(args.lmbda, args.num_filters)
   # 配置训练方法，算bpp、mse、lose的加权平均
   model.compile(
-      optimizer=tf.keras.optimizers.Adam(learning_rate=1e-4), # 用优化器传入学习率进行梯度下降
+      # optimizer=tf.keras.optimizers.Adam(learning_rate=1e-4), # 用优化器传入学习率进行梯度下降
+      optimizer=tf.keras.optimizers.Adam(learning_rate=1e-5), # 用优化器传入学习率进行梯度下降
   )
 
   if args.train_glob: # 给了数据集路径（不过滤大小直接裁剪）
@@ -495,14 +496,16 @@ def parse_args(argv):
       # "--model_path", default="bls2017_new5",
       # "--model_path", default="bls2017_new6",
       
-      # 效果不好的三个点
+      # 效果不好的三个点 0.0075、0.015、0.03
       # "--model_path", default="bls2017_model/bls2017_renew2",
       # "--model_path", default="bls2017_model/bls2017_renew3",
       # "--model_path", default="bls2017_model/bls2017_renew4",
       
+      # 改变参数，重新训练这三个点
+      # "--model_path", default="bls2017_model/bls2017_change3",
       
       
-      "--model_path", default="test",
+      # "--model_path", default="test",
       
       
       
@@ -528,6 +531,11 @@ def parse_args(argv):
       # "--model_path", default="./models/bls2017_model/bls2017_renew2",
       # "--model_path", default="./models/bls2017_model/bls2017_renew3",
       # "--model_path", default="./models/bls2017_model/bls2017_renew4",
+      
+      # 改变参数，重新训练这三个点
+      "--model_path", default="./models/bls2017_model/bls2017_change3",
+      
+      
       
       
       
@@ -564,7 +572,7 @@ def parse_args(argv):
       # 0.01\0.02\0.04\0.06\0.09\1.1\0.005 # 第一次失败的几个点
       # 新增几个lambda0.0016、0.0032、0.0075对应滤波器数量num_filters=128
       # 0.015、0.03、0.045，对应滤波器数量num_filters=192
-      "--lambda", type=float, default=0.015, dest="lmbda",
+      "--lambda", type=float, default=0.0075, dest="lmbda",
       help="Lambda for rate-distortion tradeoff.")
   train_cmd.add_argument(
       "--train_glob", type=str, default=None,
@@ -572,8 +580,8 @@ def parse_args(argv):
            "expand to a list of RGB images in PNG format. If unspecified, the "
            "CLIC dataset from TensorFlow Datasets is used.")
   train_cmd.add_argument(
-      # "--num_filters", type=int, default=128, # 低码率
-      "--num_filters", type=int, default=192, # 高码率
+      "--num_filters", type=int, default=128, # 低码率
+      # "--num_filters", type=int, default=192, # 高码率
       help="Number of filters per layer.")
   train_cmd.add_argument(
       # "--train_path", default="/tmp/train_bls2017",
