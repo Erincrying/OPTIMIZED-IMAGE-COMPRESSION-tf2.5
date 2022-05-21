@@ -293,7 +293,7 @@ def train(args):
   # 配置训练方法，算bpp、mse、lose的加权平均
   model.compile(
       # optimizer=tf.keras.optimizers.Adam(learning_rate=1e-4), # 用优化器传入学习率进行梯度下降
-      optimizer=tf.keras.optimizers.Adam(learning_rate=1e-5), # 用优化器传入学习率进行梯度下降
+      optimizer=tf.keras.optimizers.Adam(learning_rate=1e-3), # 用优化器传入学习率进行梯度下降
   )
 
   if args.train_glob: # 给了数据集路径（不过滤大小直接裁剪）
@@ -503,6 +503,8 @@ def parse_args(argv):
       
       # 改变参数，重新训练这三个点
       # "--model_path", default="bls2017_model/bls2017_change3",
+      # "--model_path", default="bls2017_model/bls2017_change3_01",
+      
       
       
       # "--model_path", default="test",
@@ -533,8 +535,10 @@ def parse_args(argv):
       # "--model_path", default="./models/bls2017_model/bls2017_renew4",
       
       # 改变参数，重新训练这三个点
-      "--model_path", default="./models/bls2017_model/bls2017_change3",
+      # "--model_path", default="./models/bls2017_model/bls2017_change3",
+      "--model_path", default="./models/bls2017_model/bls2017_change3_01",
       
+
       
       
       
