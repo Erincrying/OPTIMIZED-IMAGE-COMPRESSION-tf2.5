@@ -1,3 +1,4 @@
+# 超先验模型
 # Copyright 2019 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -27,6 +28,21 @@ parameters may be necessary. To compress images with published models, see
 
 This script requires TFC v2 (`pip install tensorflow-compression==2.*`).
 """
+# 使用gpu
+import os
+os.environ['CUDA_VISIBLE_DEVICES'] = "0" 
+# 限制cpu核数
+import tensorflow as tf
+os.environ["OMP_NUM_THREADS"] = "4" # cpu核数
+tf.config.threading.set_intra_op_parallelism_threads(4)
+tf.config.threading.set_inter_op_parallelism_threads(4)
+
+# 申请gpu分配内存
+config = tf.compat.v1.ConfigProto()
+config.gpu_options.per_process_gpu_memory_fraction = 0.2  # 程序最多只能占用指定gpu50%的显存
+config.gpu_options.allow_growth = True  # 设置动态分配GPU内存（可选）
+sess = tf.compat.v1.Session(config = config)
+
 
 import argparse
 import glob
@@ -97,7 +113,7 @@ class SynthesisTransform(tf.keras.Sequential):
         activation=None))
     self.add(tf.keras.layers.Lambda(lambda x: x * 255.))
 
-
+'''超先验模型的非线性分析变换'''
 class HyperAnalysisTransform(tf.keras.Sequential):
   """The analysis transform for the entropy model parameters."""
 
@@ -116,7 +132,7 @@ class HyperAnalysisTransform(tf.keras.Sequential):
         padding="same_zeros", use_bias=False,
         activation=None))
 
-
+'''超先验模型的非线性综合变换'''
 class HyperSynthesisTransform(tf.keras.Sequential):
   """The synthesis transform for the entropy model parameters."""
 
@@ -142,15 +158,19 @@ class BMSHJ2018Model(tf.keras.Model):
   def __init__(self, lmbda, num_filters, num_scales, scale_min, scale_max):
     super().__init__()
     self.lmbda = lmbda
+    # 构建分组边界
     self.num_scales = num_scales
     offset = tf.math.log(scale_min)
     factor = (tf.math.log(scale_max) - tf.math.log(scale_min)) / (
         num_scales - 1.)
     self.scale_fn = lambda i: tf.math.exp(offset + factor * i)
+    # 提取特征y
     self.analysis_transform = AnalysisTransform(num_filters)
     self.synthesis_transform = SynthesisTransform(num_filters)
+    # 超先验网络提取变量z
     self.hyper_analysis_transform = HyperAnalysisTransform(num_filters)
     self.hyper_synthesis_transform = HyperSynthesisTransform(num_filters)
+    # 计算先验概率
     self.hyperprior = tfc.NoisyDeepFactorized(batch_shape=(num_filters,))
     self.build((None, None, None, 3))
 
@@ -261,10 +281,10 @@ class BMSHJ2018Model(tf.keras.Model):
     # Then cast back to 8-bit integer.
     return tf.saturate_cast(tf.round(x_hat), tf.uint8)
 
-
+# 过滤图片尺寸大于patchsize且三通道
 def check_image_size(image, patchsize):
   shape = tf.shape(image)
-  return shape[0] >= patchsize and shape[1] >= patchsize and shape[-1] == 3
+  return shape[0] >= patchsize and shape[1] >= patchsize and shape[-1] == 3 # -1一定是最后一项，三通道
 
 
 def crop_image(image, patchsize):
@@ -346,7 +366,7 @@ def compress(args):
   """Compresses an image."""
   # Load model and use it to compress the image.
   model = tf.keras.models.load_model(args.model_path)
-  x = read_png(args.input_file)
+  x = read_png(args.input_file) # kodak数据集shape=(512,768,3)
   tensors = model.compress(x)
 
   # Write a binary file with the shape information and the compressed string.
@@ -405,7 +425,13 @@ def parse_args(argv):
       "--verbose", "-V", action="store_true",
       help="Report progress and metrics when training or compressing.")
   parser.add_argument(
-      "--model_path", default="bmshj2018",
+      # "--model_path", default="bmshj2018",
+      # 训练
+      "--model_path", default="bmshj2018/bmshj2018Model/bmshj2018_01",
+      
+      
+      # 压缩
+      # "--model_path", default="./models/bmshj2018/bmshj2018Model/bmshj2018_01",
       help="Path where to save/load the trained model.")
   subparsers = parser.add_subparsers(
       title="commands", dest="command",
@@ -431,7 +457,10 @@ def parse_args(argv):
                   "set is simply a random sampling of patches from the "
                   "training set.")
   train_cmd.add_argument(
-      "--lambda", type=float, default=0.01, dest="lmbda",
+      # 几个lambda0.0016、0.0032、0.0075对应滤波器数量num_filters=128
+      # 0.015、0.03、0.045，对应滤波器数量num_filters=192
+      # 初始0.01
+      "--lambda", type=float, default=0.0016, dest="lmbda",
       help="Lambda for rate-distortion tradeoff.")
   train_cmd.add_argument(
       "--train_glob", type=str, default=None,
@@ -439,13 +468,15 @@ def parse_args(argv):
            "expand to a list of RGB images in PNG format. If unspecified, the "
            "CLIC dataset from TensorFlow Datasets is used.")
   train_cmd.add_argument(
-      "--num_filters", type=int, default=192,
+      # 初始192
+      "--num_filters", type=int, default=128,
       help="Number of filters per layer.")
   train_cmd.add_argument(
       "--num_scales", type=int, default=64,
       help="Number of Gaussian scales to prepare range coding tables for.")
   train_cmd.add_argument(
       "--scale_min", type=float, default=.11,
+      # 高斯标准差最小值
       help="Minimum value of standard deviation of Gaussians.")
   train_cmd.add_argument(
       "--scale_max", type=float, default=256.,
