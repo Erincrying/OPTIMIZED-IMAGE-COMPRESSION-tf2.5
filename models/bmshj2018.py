@@ -158,16 +158,18 @@ class BMSHJ2018Model(tf.keras.Model):
   def __init__(self, lmbda, num_filters, num_scales, scale_min, scale_max):
     super().__init__()
     self.lmbda = lmbda
-    # 构建分组边界
+    # 构建分组边界，相关变量在LocationScaleIndexedEntropyModel中使用
+    # num_scales：整数。值indexes必须在范围内 。 [0, num_scales)
+    # scale_fn：可调用。indexes被传递给可调用对象，返回值作为scale关键字参数给出。
     self.num_scales = num_scales
     offset = tf.math.log(scale_min)
     factor = (tf.math.log(scale_max) - tf.math.log(scale_min)) / (
         num_scales - 1.)
     self.scale_fn = lambda i: tf.math.exp(offset + factor * i)
-    # 提取特征y
+    # 提取特征y的变换网络
     self.analysis_transform = AnalysisTransform(num_filters)
     self.synthesis_transform = SynthesisTransform(num_filters)
-    # 超先验网络提取变量z
+    # 超先验网络的变换
     self.hyper_analysis_transform = HyperAnalysisTransform(num_filters)
     self.hyper_synthesis_transform = HyperSynthesisTransform(num_filters)
     # 计算先验概率
@@ -176,9 +178,12 @@ class BMSHJ2018Model(tf.keras.Model):
 
   def call(self, x, training):
     """Computes rate and distortion losses."""
+    # 位置尺度随机变量族的索引熵模型，指定的分布使用num_scales比例参数的值进行参数化。通过将分布移至零来处理逐个元素的位置参数。
     entropy_model = tfc.LocationScaleIndexedEntropyModel(
         tfc.NoisyNormal, self.num_scales, self.scale_fn, coding_rank=3,
         compression=False)
+    # 连续随机变量的批处理熵模型，该库中的熵模型类简化了设计率失真优化代码的过程。在训练期间，它们的行为类似于似然模型。
+    # 边信息的建模是通过全分解的熵模型建模（即balle2017的熵模型建模获取p(y)的方式）
     side_entropy_model = tfc.ContinuousBatchedEntropyModel(
         self.hyperprior, coding_rank=3, compression=False)
 
@@ -190,7 +195,9 @@ class BMSHJ2018Model(tf.keras.Model):
     x_hat = self.synthesis_transform(y_hat)
 
     # Total number of bits divided by total number of pixels.
+    #  tf.reduce_prod 计算一个张量的各个维度上元素的乘积.（长乘宽）
     num_pixels = tf.cast(tf.reduce_prod(tf.shape(x)[:-1]), bits.dtype)
+    # 这里的bit是边信息与原信息的比特数
     bpp = (tf.reduce_sum(bits) + tf.reduce_sum(side_bits)) / num_pixels
     # Mean squared error across pixels.
     mse = tf.reduce_mean(tf.math.squared_difference(x, x_hat))
@@ -247,18 +254,20 @@ class BMSHJ2018Model(tf.keras.Model):
   def compress(self, x):
     """Compresses an image."""
     # Add batch dimension and cast to float.
-    x = tf.expand_dims(x, 0)
+    # 维度变化（维度扩展主要是为了适配TensorFlow的函数。或许batch维度可以省略？）
+    # 假设输入矩阵维度为[256,256]
+    x = tf.expand_dims(x, 0) # tf.expand_dims增加维度，增加了批维度batch [1,256,256] 
     x = tf.cast(x, dtype=tf.float32)
     y = self.analysis_transform(x)
     z = self.hyper_analysis_transform(abs(y))
-    # Preserve spatial shapes of image and latents.
+    # Preserve spatial shapes of image and latents.保留图像和潜在对象的空间形状
     x_shape = tf.shape(x)[1:-1]
     y_shape = tf.shape(y)[1:-1]
     z_shape = tf.shape(z)[1:-1]
     z_hat, _ = self.side_entropy_model(z, training=False)
     indexes = self.hyper_synthesis_transform(z_hat)
     indexes = indexes[:, :y_shape[0], :y_shape[1], :]
-    side_string = self.side_entropy_model.compress(z)
+    side_string = self.side_entropy_model.compress(z) # side_entropy_model.compress:Compresses the tensor to bit strings.模型自带compress方法
     string = self.entropy_model.compress(y, indexes)
     return string, side_string, x_shape, y_shape, z_shape
 
@@ -271,6 +280,7 @@ class BMSHJ2018Model(tf.keras.Model):
   ])
   def decompress(self, string, side_string, x_shape, y_shape, z_shape):
     """Decompresses an image."""
+    # 加入边信息进行解压缩
     z_hat = self.side_entropy_model.decompress(side_string, z_shape)
     indexes = self.hyper_synthesis_transform(z_hat)
     indexes = indexes[:, :y_shape[0], :y_shape[1], :]
@@ -354,8 +364,8 @@ def train(args):
           tf.keras.callbacks.TerminateOnNaN(),
           tf.keras.callbacks.TensorBoard(
               log_dir=args.train_path,
-              histogram_freq=1, update_freq="epoch"),
-          tf.keras.callbacks.experimental.BackupAndRestore(args.train_path),
+              histogram_freq=1, update_freq="epoch"), # TensorBoard可视化
+          tf.keras.callbacks.experimental.BackupAndRestore(args.train_path), # 断点恢复
       ],
       verbose=int(args.verbose),
   )
@@ -427,7 +437,7 @@ def parse_args(argv):
   parser.add_argument(
       # "--model_path", default="bmshj2018",
       # 训练
-      "--model_path", default="bmshj2018/bmshj2018Model/bmshj2018_01",
+      "--model_path", default="bmshj2018/bmshj2018Model/bmshj2018_test",
       
       
       # 压缩
