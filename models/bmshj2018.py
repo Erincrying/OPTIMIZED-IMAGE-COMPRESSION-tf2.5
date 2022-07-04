@@ -438,11 +438,11 @@ def parse_args(argv):
   parser.add_argument(
       # "--model_path", default="bmshj2018",
       # 训练
-      "--model_path", default="bmshj2018Model/bmshj2018_test",
+      # "--model_path", default="bmshj2018Model/bmshj2018_test",
       
       
       # 压缩
-      # "--model_path", default="./models/bmshj2018Model/bmshj2018_01",
+      "--model_path", default="./models/bmshj2018Model/bmshj2018_test",
       help="Path where to save/load the trained model.")
   subparsers = parser.add_subparsers(
       title="commands", dest="command",
