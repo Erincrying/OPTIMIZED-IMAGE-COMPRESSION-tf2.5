@@ -33,9 +33,9 @@ import os
 os.environ['CUDA_VISIBLE_DEVICES'] = "0" 
 # 限制cpu核数
 import tensorflow as tf
-os.environ["OMP_NUM_THREADS"] = "4" # cpu核数
-tf.config.threading.set_intra_op_parallelism_threads(4)
-tf.config.threading.set_inter_op_parallelism_threads(4)
+os.environ["OMP_NUM_THREADS"] = "6" # cpu核数
+tf.config.threading.set_intra_op_parallelism_threads(6)
+tf.config.threading.set_inter_op_parallelism_threads(6)
 
 # 申请gpu分配内存
 config = tf.compat.v1.ConfigProto()
@@ -369,6 +369,7 @@ def train(args):
       ],
       verbose=int(args.verbose),
   )
+  print(args.model_path, 'args.model_path')
   model.save(args.model_path)
 
 
@@ -437,11 +438,11 @@ def parse_args(argv):
   parser.add_argument(
       # "--model_path", default="bmshj2018",
       # 训练
-      "--model_path", default="bmshj2018/bmshj2018Model/bmshj2018_test",
+      "--model_path", default="bmshj2018Model/bmshj2018_test",
       
       
       # 压缩
-      # "--model_path", default="./models/bmshj2018/bmshj2018Model/bmshj2018_01",
+      # "--model_path", default="./models/bmshj2018Model/bmshj2018_01",
       help="Path where to save/load the trained model.")
   subparsers = parser.add_subparsers(
       title="commands", dest="command",
