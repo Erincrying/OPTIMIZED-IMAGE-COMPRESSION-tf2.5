@@ -54,6 +54,10 @@ import tensorflow_datasets as tfds
 import tensorflow_compression as tfc
 
 
+from numpy import *
+import copy
+
+
 def read_png(filename):
   """Loads a PNG image file."""
   string = tf.io.read_file(filename)
