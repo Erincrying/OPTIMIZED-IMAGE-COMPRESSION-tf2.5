@@ -21,9 +21,9 @@
       // "args": ["--verbose","decompress","./models/kodakCompress_01/kodim01.tfci", "./models/kodakCompress_01/kodim01_decompress.png"] // 解压缩图片
 
       // bmshj2018
-      "args": ["--verbose","train"] // 训练
+      // "args": ["--verbose","train"] // 训练
       // "args": ["--verbose","compress","./models/kodak/kodim01.png", "./models/kodim01.tfci"] // 压缩一张图
-      // "args": ["--verbose","compressAll","./models/kodak", "./models/bmshj2018compress/kodakcompress_test"] // 压缩文件夹图片
+      "args": ["--verbose","compressAll","./models/kodak", "./models/bmshj2018compress/kodakcompress_01"] // 压缩文件夹图片
 
 
 
