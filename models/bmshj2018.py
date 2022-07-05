@@ -347,7 +347,7 @@ def train(args):
       args.lmbda, args.num_filters, args.num_scales, args.scale_min,
       args.scale_max)
   model.compile(
-      optimizer=tf.keras.optimizers.Adam(learning_rate=1e-4),
+      optimizer=tf.keras.optimizers.Adam(learning_rate=1e-3),
   )
 
   if args.train_glob:
@@ -526,10 +526,12 @@ def parse_args(argv):
       # "--model_path", default="bmshj2018",
       # 训练
       # "--model_path", default="bmshj2018Model/bmshj2018_test",
+      "--model_path", default="bmshj2018Model/bmshj2018_01",
+      
       
       
       # 压缩
-      "--model_path", default="./models/bmshj2018Model/bmshj2018_test",
+      # "--model_path", default="./models/bmshj2018Model/bmshj2018_test",
       help="Path where to save/load the trained model.")
   subparsers = parser.add_subparsers(
       title="commands", dest="command",
