@@ -33,9 +33,9 @@ import os
 os.environ['CUDA_VISIBLE_DEVICES'] = "0" 
 # 限制cpu核数
 import tensorflow as tf
-os.environ["OMP_NUM_THREADS"] = "6" # cpu核数
-tf.config.threading.set_intra_op_parallelism_threads(6)
-tf.config.threading.set_inter_op_parallelism_threads(6)
+os.environ["OMP_NUM_THREADS"] = "8" # cpu核数
+tf.config.threading.set_intra_op_parallelism_threads(8)
+tf.config.threading.set_inter_op_parallelism_threads(8)
 
 # 申请gpu分配内存
 config = tf.compat.v1.ConfigProto()
@@ -69,11 +69,11 @@ def write_png(filename, image):
   string = tf.image.encode_png(image)
   tf.io.write_file(filename, string)
 
-
+# 以下所有卷积增加一个参数num_filters_M，参考文献的网络图
 class AnalysisTransform(tf.keras.Sequential):
   """The analysis transform."""
 
-  def __init__(self, num_filters):
+  def __init__(self, num_filters, num_filters_M):
     super().__init__(name="analysis")
     self.add(tf.keras.layers.Lambda(lambda x: x / 255.))
     self.add(tfc.SignalConv2D(
@@ -89,7 +89,7 @@ class AnalysisTransform(tf.keras.Sequential):
         padding="same_zeros", use_bias=True,
         activation=tfc.GDN(name="gdn_2")))
     self.add(tfc.SignalConv2D(
-        num_filters, (5, 5), name="layer_3", corr=True, strides_down=2,
+        num_filters_M, (5, 5), name="layer_3", corr=True, strides_down=2,
         padding="same_zeros", use_bias=True,
         activation=None))
 
@@ -140,7 +140,7 @@ class HyperAnalysisTransform(tf.keras.Sequential):
 class HyperSynthesisTransform(tf.keras.Sequential):
   """The synthesis transform for the entropy model parameters."""
 
-  def __init__(self, num_filters):
+  def __init__(self, num_filters, num_filters_M):
     super().__init__(name="hyper_synthesis")
     self.add(tfc.SignalConv2D(
         num_filters, (5, 5), name="layer_0", corr=False, strides_up=2,
@@ -151,7 +151,7 @@ class HyperSynthesisTransform(tf.keras.Sequential):
         padding="same_zeros", use_bias=True, kernel_parameter="variable",
         activation=tf.nn.relu))
     self.add(tfc.SignalConv2D(
-        num_filters, (3, 3), name="layer_2", corr=False, strides_up=1,
+        num_filters_M, (3, 3), name="layer_2", corr=False, strides_up=1,
         padding="same_zeros", use_bias=True, kernel_parameter="variable",
         activation=None))
 
@@ -159,7 +159,7 @@ class HyperSynthesisTransform(tf.keras.Sequential):
 class BMSHJ2018Model(tf.keras.Model):
   """Main model class."""
 
-  def __init__(self, lmbda, num_filters, num_scales, scale_min, scale_max):
+  def __init__(self, lmbda, num_filters, num_filters_M, num_scales, scale_min, scale_max):
     super().__init__()
     self.lmbda = lmbda
     # 构建分组边界，相关变量在LocationScaleIndexedEntropyModel中使用
@@ -171,11 +171,11 @@ class BMSHJ2018Model(tf.keras.Model):
         num_scales - 1.)
     self.scale_fn = lambda i: tf.math.exp(offset + factor * i)
     # 提取特征y的变换网络
-    self.analysis_transform = AnalysisTransform(num_filters)
+    self.analysis_transform = AnalysisTransform(num_filters, num_filters_M)
     self.synthesis_transform = SynthesisTransform(num_filters)
     # 超先验网络的变换
     self.hyper_analysis_transform = HyperAnalysisTransform(num_filters)
-    self.hyper_synthesis_transform = HyperSynthesisTransform(num_filters)
+    self.hyper_synthesis_transform = HyperSynthesisTransform(num_filters, num_filters_M)
     # 计算先验概率
     self.hyperprior = tfc.NoisyDeepFactorized(batch_shape=(num_filters,))
     self.build((None, None, None, 3))
@@ -344,10 +344,10 @@ def train(args):
     tf.debugging.enable_check_numerics()
 
   model = BMSHJ2018Model(
-      args.lmbda, args.num_filters, args.num_scales, args.scale_min,
+      args.lmbda, args.num_filters, args.num_filters_M, args.num_scales, args.scale_min,
       args.scale_max)
   model.compile(
-      optimizer=tf.keras.optimizers.Adam(learning_rate=1e-3),
+      optimizer=tf.keras.optimizers.Adam(learning_rate=1e-4),
   )
 
   if args.train_glob:
@@ -527,12 +527,16 @@ def parse_args(argv):
       # 训练
       # "--model_path", default="bmshj2018Model/bmshj2018_test",
       # "--model_path", default="bmshj2018Model/bmshj2018_01",
+      # "--model_path", default="bmshj2018Model/bmshj2018_02",
+      
       
       
       
       # 压缩
       # "--model_path", default="./models/bmshj2018Model/bmshj2018_test",
-      "--model_path", default="./models/bmshj2018Model/bmshj2018_01",
+      # "--model_path", default="./models/bmshj2018Model/bmshj2018_01",
+      "--model_path", default="./models/bmshj2018Model/bmshj2018_02",
+      
       
       help="Path where to save/load the trained model.")
   subparsers = parser.add_subparsers(
@@ -572,6 +576,10 @@ def parse_args(argv):
   train_cmd.add_argument(
       # 初始192
       "--num_filters", type=int, default=128,
+      help="Number of filters per layer.")
+  # 添加num_filters_M，设置不同的滤波器个数
+  train_cmd.add_argument(
+      "--num_filters_M", type=int, default=192,
       help="Number of filters per layer.")
   train_cmd.add_argument(
       "--num_scales", type=int, default=64,
