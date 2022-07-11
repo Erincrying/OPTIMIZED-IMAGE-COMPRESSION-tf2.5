@@ -22,6 +22,7 @@ __pycache__/
 *.la
 *.a
 *.lib
+*.out
 
 # bazel symlinks
 /bazel-*
@@ -37,6 +38,7 @@ ipython_config.py
 .LSOverride
 ._*
 
+
 # train
 # *.png
 *.JPEG
@@ -44,3 +46,4 @@ ipython_config.py
 # *.meta
 # *.index
 # *.pbtxt
+

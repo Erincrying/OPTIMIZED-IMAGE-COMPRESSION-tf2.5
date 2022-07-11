@@ -589,7 +589,7 @@ def parse_args(argv):
       # "--model_path", default="bmshj2018Model/bmshj2018_01",
       # "--model_path", default="bmshj2018Model/bmshj2018_02",
       # "--model_path", default="bmshj2018Model/bmshj2018_03",
-      "--model_path", default="bmshj2018Model/bmshj2018_04",
+      # "--model_path", default="bmshj2018Model/bmshj2018_04",
       
       
       
@@ -601,6 +601,8 @@ def parse_args(argv):
       # "--model_path", default="./models/bmshj2018Model/bmshj2018_01",
       # "--model_path", default="./models/bmshj2018Model/bmshj2018_02",
       # "--model_path", default="./models/bmshj2018Model/bmshj2018_03",
+      "--model_path", default="./models/bmshj2018Model/bmshj2018_04",
+      
       
       
       
