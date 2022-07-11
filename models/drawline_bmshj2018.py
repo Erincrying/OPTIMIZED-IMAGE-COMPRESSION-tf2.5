@@ -18,6 +18,9 @@ bpp_myself_03 = [0.2293]
 psnr_myself_03 = [25.743942]
 
 
+bpp_myself_04 = [0.2328]
+psnr_myself_04 = [26.97355]
+
 # 添加横纵坐标与标题
 plt.xlabel('bit rate [bit/px]')
 plt.ylabel('PSNR[db]')
@@ -43,6 +46,9 @@ plt.plot(bpp_myself_02, psnr_myself_02, label='bmshj2018_02')
 # 自己的psnrbmshj2018_03
 plt.scatter(bpp_myself_03, psnr_myself_03)
 plt.plot(bpp_myself_03, psnr_myself_03, label='bmshj2018_03')
+# 自己的psnrbmshj2018_04
+plt.scatter(bpp_myself_04, psnr_myself_04)
+plt.plot(bpp_myself_04, psnr_myself_04, label='bmshj2018_04')
 #添加网格信息
 plt.grid(True, linestyle='--', alpha=0.5) #默认是True，风格设置为虚线，alpha为透明度
 plt.legend() # 为了能显示label
