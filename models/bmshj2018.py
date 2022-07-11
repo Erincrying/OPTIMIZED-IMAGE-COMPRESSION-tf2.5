@@ -72,8 +72,8 @@ def write_png(filename, image):
 # 以下所有卷积增加一个参数num_filters_M，参考文献的网络图
 class AnalysisTransform(tf.keras.Sequential):
   """The analysis transform."""
-
-  def __init__(self, num_filters, num_filters_M):
+  # 不加num_filters_M
+  def __init__(self, num_filters):
     super().__init__(name="analysis")
     self.add(tf.keras.layers.Lambda(lambda x: x / 255.))
     self.add(tfc.SignalConv2D(
@@ -89,9 +89,31 @@ class AnalysisTransform(tf.keras.Sequential):
         padding="same_zeros", use_bias=True,
         activation=tfc.GDN(name="gdn_2")))
     self.add(tfc.SignalConv2D(
-        num_filters_M, (5, 5), name="layer_3", corr=True, strides_down=2,
+        num_filters, (5, 5), name="layer_3", corr=True, strides_down=2,
         padding="same_zeros", use_bias=True,
         activation=None))
+  # 加num_filters_M
+  # def __init__(self, num_filters, num_filters_M):
+  #   super().__init__(name="analysis")
+  #   self.add(tf.keras.layers.Lambda(lambda x: x / 255.))
+  #   self.add(tfc.SignalConv2D(
+  #       num_filters, (5, 5), name="layer_0", corr=True, strides_down=2,
+  #       padding="same_zeros", use_bias=True,
+  #       activation=tfc.GDN(name="gdn_0")))
+  #   self.add(tfc.SignalConv2D(
+  #       num_filters, (5, 5), name="layer_1", corr=True, strides_down=2,
+  #       padding="same_zeros", use_bias=True,
+  #       activation=tfc.GDN(name="gdn_1")))
+  #   self.add(tfc.SignalConv2D(
+  #       num_filters, (5, 5), name="layer_2", corr=True, strides_down=2,
+  #       padding="same_zeros", use_bias=True,
+  #       activation=tfc.GDN(name="gdn_2")))
+  #   self.add(tfc.SignalConv2D(
+  #       num_filters_M, (5, 5), name="layer_3", corr=True, strides_down=2,
+  #       padding="same_zeros", use_bias=True,
+  #       activation=None))
+  
+
 
 
 class SynthesisTransform(tf.keras.Sequential):
@@ -139,8 +161,8 @@ class HyperAnalysisTransform(tf.keras.Sequential):
 '''超先验模型的非线性综合变换'''
 class HyperSynthesisTransform(tf.keras.Sequential):
   """The synthesis transform for the entropy model parameters."""
-
-  def __init__(self, num_filters, num_filters_M):
+  # 不加num_filters_M
+  def __init__(self, num_filters):
     super().__init__(name="hyper_synthesis")
     self.add(tfc.SignalConv2D(
         num_filters, (5, 5), name="layer_0", corr=False, strides_up=2,
@@ -151,34 +173,68 @@ class HyperSynthesisTransform(tf.keras.Sequential):
         padding="same_zeros", use_bias=True, kernel_parameter="variable",
         activation=tf.nn.relu))
     self.add(tfc.SignalConv2D(
-        num_filters_M, (3, 3), name="layer_2", corr=False, strides_up=1,
+        num_filters, (3, 3), name="layer_2", corr=False, strides_up=1,
         padding="same_zeros", use_bias=True, kernel_parameter="variable",
         activation=None))
+    
+  # 加num_filters_M
+  # def __init__(self, num_filters, num_filters_M):
+  #   super().__init__(name="hyper_synthesis")
+  #   self.add(tfc.SignalConv2D(
+  #       num_filters, (5, 5), name="layer_0", corr=False, strides_up=2,
+  #       padding="same_zeros", use_bias=True, kernel_parameter="variable",
+  #       activation=tf.nn.relu))
+  #   self.add(tfc.SignalConv2D(
+  #       num_filters, (5, 5), name="layer_1", corr=False, strides_up=2,
+  #       padding="same_zeros", use_bias=True, kernel_parameter="variable",
+  #       activation=tf.nn.relu))
+  #   self.add(tfc.SignalConv2D(
+  #       num_filters_M, (3, 3), name="layer_2", corr=False, strides_up=1,
+  #       padding="same_zeros", use_bias=True, kernel_parameter="variable",
+  #       activation=None))
 
 
 class BMSHJ2018Model(tf.keras.Model):
   """Main model class."""
-
-  def __init__(self, lmbda, num_filters, num_filters_M, num_scales, scale_min, scale_max):
+  def __init__(self, lmbda, num_filters, num_scales, scale_min, scale_max):
+  # def __init__(self, lmbda, num_filters, num_filters_M, num_scales, scale_min, scale_max):
     super().__init__()
     self.lmbda = lmbda
     # 构建分组边界，相关变量在LocationScaleIndexedEntropyModel中使用
     # num_scales：整数。值indexes必须在范围内 。 [0, num_scales)
     # scale_fn：可调用。indexes被传递给可调用对象，返回值作为scale关键字参数给出。
+    
+    # 不加num_filters_M
     self.num_scales = num_scales
     offset = tf.math.log(scale_min)
     factor = (tf.math.log(scale_max) - tf.math.log(scale_min)) / (
         num_scales - 1.)
     self.scale_fn = lambda i: tf.math.exp(offset + factor * i)
     # 提取特征y的变换网络
-    self.analysis_transform = AnalysisTransform(num_filters, num_filters_M)
+    self.analysis_transform = AnalysisTransform(num_filters)
     self.synthesis_transform = SynthesisTransform(num_filters)
     # 超先验网络的变换
     self.hyper_analysis_transform = HyperAnalysisTransform(num_filters)
-    self.hyper_synthesis_transform = HyperSynthesisTransform(num_filters, num_filters_M)
+    self.hyper_synthesis_transform = HyperSynthesisTransform(num_filters)
     # 计算先验概率
     self.hyperprior = tfc.NoisyDeepFactorized(batch_shape=(num_filters,))
     self.build((None, None, None, 3))
+    
+    # 加num_filters_M
+    # self.num_scales = num_scales
+    # offset = tf.math.log(scale_min)
+    # factor = (tf.math.log(scale_max) - tf.math.log(scale_min)) / (
+    #     num_scales - 1.)
+    # self.scale_fn = lambda i: tf.math.exp(offset + factor * i)
+    # # 提取特征y的变换网络
+    # self.analysis_transform = AnalysisTransform(num_filters, num_filters_M)
+    # self.synthesis_transform = SynthesisTransform(num_filters)
+    # # 超先验网络的变换
+    # self.hyper_analysis_transform = HyperAnalysisTransform(num_filters)
+    # self.hyper_synthesis_transform = HyperSynthesisTransform(num_filters, num_filters_M)
+    # # 计算先验概率
+    # self.hyperprior = tfc.NoisyDeepFactorized(batch_shape=(num_filters,))
+    # self.build((None, None, None, 3))
 
   def call(self, x, training):
     """Computes rate and distortion losses."""
@@ -342,10 +398,14 @@ def train(args):
   """Instantiates and trains the model."""
   if args.check_numerics:
     tf.debugging.enable_check_numerics()
-
+  # 不加num_filters_M
   model = BMSHJ2018Model(
-      args.lmbda, args.num_filters, args.num_filters_M, args.num_scales, args.scale_min,
+      args.lmbda, args.num_filters, args.num_scales, args.scale_min,
       args.scale_max)
+  # 加num_filters_M
+  # model = BMSHJ2018Model(
+  #     args.lmbda, args.num_filters, args.num_filters_M, args.num_scales, args.scale_min,
+  #     args.scale_max)
   model.compile(
       optimizer=tf.keras.optimizers.Adam(learning_rate=1e-4),
   )
@@ -528,6 +588,8 @@ def parse_args(argv):
       # "--model_path", default="bmshj2018Model/bmshj2018_test",
       # "--model_path", default="bmshj2018Model/bmshj2018_01",
       # "--model_path", default="bmshj2018Model/bmshj2018_02",
+      # "--model_path", default="bmshj2018Model/bmshj2018_03",
+      
       
       
       
@@ -535,7 +597,9 @@ def parse_args(argv):
       # 压缩
       # "--model_path", default="./models/bmshj2018Model/bmshj2018_test",
       # "--model_path", default="./models/bmshj2018Model/bmshj2018_01",
-      "--model_path", default="./models/bmshj2018Model/bmshj2018_02",
+      # "--model_path", default="./models/bmshj2018Model/bmshj2018_02",
+      "--model_path", default="./models/bmshj2018Model/bmshj2018_03",
+      
       
       
       help="Path where to save/load the trained model.")
@@ -575,7 +639,7 @@ def parse_args(argv):
            "CLIC dataset from TensorFlow Datasets is used.")
   train_cmd.add_argument(
       # 初始192
-      "--num_filters", type=int, default=128,
+      "--num_filters", type=int, default=192,
       help="Number of filters per layer.")
   # 添加num_filters_M，设置不同的滤波器个数
   train_cmd.add_argument(
