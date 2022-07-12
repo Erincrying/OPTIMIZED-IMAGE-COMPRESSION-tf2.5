@@ -407,7 +407,7 @@ def train(args):
   #     args.lmbda, args.num_filters, args.num_filters_M, args.num_scales, args.scale_min,
   #     args.scale_max)
   model.compile(
-      optimizer=tf.keras.optimizers.Adam(learning_rate=1e-3),
+      optimizer=tf.keras.optimizers.Adam(learning_rate=1e-4),
   )
 
   if args.train_glob:
@@ -590,6 +590,9 @@ def parse_args(argv):
       # "--model_path", default="bmshj2018Model/bmshj2018_02",
       # "--model_path", default="bmshj2018Model/bmshj2018_03",
       # "--model_path", default="bmshj2018Model/bmshj2018_04",
+      # 第二个码率点
+      "--model_path", default="bmshj2018Model/bmshj2018_SEC_01",
+      
       
       
       
@@ -601,7 +604,7 @@ def parse_args(argv):
       # "--model_path", default="./models/bmshj2018Model/bmshj2018_01",
       # "--model_path", default="./models/bmshj2018Model/bmshj2018_02",
       # "--model_path", default="./models/bmshj2018Model/bmshj2018_03",
-      "--model_path", default="./models/bmshj2018Model/bmshj2018_04",
+      # "--model_path", default="./models/bmshj2018Model/bmshj2018_04",
       
       
       
@@ -634,7 +637,7 @@ def parse_args(argv):
       # 几个lambda0.0016、0.0032、0.0075对应滤波器数量num_filters=128
       # 0.015、0.03、0.045，对应滤波器数量num_filters=192
       # 初始0.01
-      "--lambda", type=float, default=0.0016, dest="lmbda",
+      "--lambda", type=float, default=0.0032, dest="lmbda",
       help="Lambda for rate-distortion tradeoff.")
   train_cmd.add_argument(
       "--train_glob", type=str, default=None,
@@ -643,7 +646,7 @@ def parse_args(argv):
            "CLIC dataset from TensorFlow Datasets is used.")
   train_cmd.add_argument(
       # 初始192
-      "--num_filters", type=int, default=192,
+      "--num_filters", type=int, default=128,
       help="Number of filters per layer.")
   # 添加num_filters_M，设置不同的滤波器个数
   train_cmd.add_argument(
@@ -660,6 +663,7 @@ def parse_args(argv):
       "--scale_max", type=float, default=256.,
       help="Maximum value of standard deviation of Gaussians.")
   train_cmd.add_argument(
+      # "--train_path", default="/tmp/train_bmshj2018_01",
       "--train_path", default="/tmp/train_bmshj2018",
       help="Path where to log training metrics for TensorBoard and back up "
            "intermediate model checkpoints.")
