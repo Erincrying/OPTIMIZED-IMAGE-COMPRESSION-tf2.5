@@ -33,9 +33,9 @@ import os
 os.environ['CUDA_VISIBLE_DEVICES'] = "0" 
 # 限制cpu核数
 import tensorflow as tf
-os.environ["OMP_NUM_THREADS"] = "8" # cpu核数
-tf.config.threading.set_intra_op_parallelism_threads(8)
-tf.config.threading.set_inter_op_parallelism_threads(8)
+os.environ["OMP_NUM_THREADS"] = "10" # cpu核数
+tf.config.threading.set_intra_op_parallelism_threads(10)
+tf.config.threading.set_inter_op_parallelism_threads(10)
 
 # 申请gpu分配内存
 config = tf.compat.v1.ConfigProto()
@@ -592,6 +592,8 @@ def parse_args(argv):
       # "--model_path", default="bmshj2018Model/bmshj2018_04",
       # 第二个码率点
       # "--model_path", default="bmshj2018Model/bmshj2018_SEC_01",
+      # "--model_path", default="bmshj2018Model/bmshj2018_SEC_02",
+      
       
       
       
@@ -605,7 +607,9 @@ def parse_args(argv):
       # "--model_path", default="./models/bmshj2018Model/bmshj2018_02",
       # "--model_path", default="./models/bmshj2018Model/bmshj2018_03",
       # "--model_path", default="./models/bmshj2018Model/bmshj2018_04",
-      "--model_path", default="./models/bmshj2018Model/bmshj2018_SEC_01",
+      # "--model_path", default="./models/bmshj2018Model/bmshj2018_SEC_01",
+      "--model_path", default="./models/bmshj2018Model/bmshj2018_SEC_02",
+
       
       
       
@@ -648,7 +652,7 @@ def parse_args(argv):
            "CLIC dataset from TensorFlow Datasets is used.")
   train_cmd.add_argument(
       # 初始192
-      "--num_filters", type=int, default=128,
+      "--num_filters", type=int, default=192,
       help="Number of filters per layer.")
   # 添加num_filters_M，设置不同的滤波器个数
   train_cmd.add_argument(
