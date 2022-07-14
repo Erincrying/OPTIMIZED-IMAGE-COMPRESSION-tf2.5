@@ -33,6 +33,8 @@ psnr_myself_SEC_01= [28.450409]
 bpp_myself_SEC_02= [0.2946]
 psnr_myself_SEC_02= [28.352106]
 
+bpp_myself_SEC_03= [0.2975]
+psnr_myself_SEC_03= [28.341482]
 
 
 # 添加横纵坐标与标题
@@ -77,6 +79,9 @@ plt.plot(bpp_myself_SEC_01, psnr_myself_SEC_01, label='bmshj2018_SEC_01')
 
 plt.scatter(bpp_myself_SEC_02, psnr_myself_SEC_02)
 plt.plot(bpp_myself_SEC_02, psnr_myself_SEC_02, label='bmshj2018_SEC_02')
+
+plt.scatter(bpp_myself_SEC_03, psnr_myself_SEC_03)
+plt.plot(bpp_myself_SEC_03, psnr_myself_SEC_03, label='bmshj2018_SEC_03')
 
 #添加网格信息
 plt.grid(True, linestyle='--', alpha=0.5) #默认是True，风格设置为虚线，alpha为透明度

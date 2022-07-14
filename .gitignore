@@ -47,3 +47,8 @@ ipython_config.py
 # *.index
 # *.pbtxt
 
+
+# large file
+/models/bmshj2018Model/bmshj2018_SEC_02/variables/variables.data-00000-of-00001
+/models/bmshj2018Model/bmshj2018_03/variables/variables.data-00000-of-00001
+/models/bmshj2018Model/bmshj2018_04/variables/variables.data-00000-of-00001
