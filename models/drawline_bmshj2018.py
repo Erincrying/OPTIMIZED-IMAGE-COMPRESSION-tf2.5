@@ -4,8 +4,8 @@ import matplotlib.pyplot as plt
 bpp_result = [0.115239, 0.185698, 0.301804, 0.468972, 0.686378, 0.966864, 1.307441, 1.727503]
 psnr_result = [27.106351, 28.679134, 30.616753, 32.554935, 34.580960, 36.720366, 38.807960, 40.794920]
 
-bpp_myself = [0.1935, 0.2553]
-psnr_myself = [27.165842, 28.450409]
+bpp_myself = [0.1935, 0.2553, 0.3598]
+psnr_myself = [27.165842, 28.450409, 30.567152]
 
 
 # 第一个码率点
@@ -35,6 +35,11 @@ psnr_myself_SEC_02= [28.352106]
 
 bpp_myself_SEC_03= [0.2975]
 psnr_myself_SEC_03= [28.341482]
+
+
+# 第三个码率点
+bpp_myself_THI_01= [0.3598]
+psnr_myself_THI_01= [30.567152]
 
 
 # 添加横纵坐标与标题
@@ -82,6 +87,12 @@ plt.plot(bpp_myself_SEC_02, psnr_myself_SEC_02, label='bmshj2018_SEC_02')
 
 plt.scatter(bpp_myself_SEC_03, psnr_myself_SEC_03)
 plt.plot(bpp_myself_SEC_03, psnr_myself_SEC_03, label='bmshj2018_SEC_03')
+
+
+
+# 第三个码率点
+plt.scatter(bpp_myself_THI_01, psnr_myself_THI_01)
+plt.plot(bpp_myself_THI_01, psnr_myself_THI_01, label='bmshj2018_THI_01')
 
 #添加网格信息
 plt.grid(True, linestyle='--', alpha=0.5) #默认是True，风格设置为虚线，alpha为透明度
