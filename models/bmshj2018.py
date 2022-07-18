@@ -597,6 +597,10 @@ def parse_args(argv):
       # "--model_path", default="bmshj2018Model/bmshj2018_SEC_02",
       # "--model_path", default="bmshj2018Model/bmshj2018_SEC_03",
       # "--model_path", default="bmshj2018Model/bmshj2018_THI_01",
+      # "--model_path", default="bmshj2018Model/bmshj2018_THI_02",
+      # "--model_path", default="bmshj2018Model/bmshj2018_THI_03",
+      
+      
       
       
       
@@ -616,7 +620,11 @@ def parse_args(argv):
       # "--model_path", default="./models/bmshj2018Model/bmshj2018_SEC_01",
       # "--model_path", default="./models/bmshj2018Model/bmshj2018_SEC_02",
       # "--model_path", default="./models/bmshj2018Model/bmshj2018_SEC_03",
-      "--model_path", default="./models/bmshj2018Model/bmshj2018_THI_01",
+      # "--model_path", default="./models/bmshj2018Model/bmshj2018_THI_01",
+      # "--model_path", default="./models/bmshj2018Model/bmshj2018_THI_02",
+      "--model_path", default="./models/bmshj2018Model/bmshj2018_THI_03",
+      
+      
       
       
 
@@ -666,7 +674,7 @@ def parse_args(argv):
       help="Number of filters per layer.")
   # 添加num_filters_M，设置不同的滤波器个数
   train_cmd.add_argument(
-      "--num_filters_M", type=int, default=128,
+      "--num_filters_M", type=int, default=192,
       help="Number of filters per layer.")
   train_cmd.add_argument(
       "--num_scales", type=int, default=64,
