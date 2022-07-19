@@ -4,8 +4,8 @@ import matplotlib.pyplot as plt
 bpp_result = [0.115239, 0.185698, 0.301804, 0.468972, 0.686378, 0.966864, 1.307441, 1.727503]
 psnr_result = [27.106351, 28.679134, 30.616753, 32.554935, 34.580960, 36.720366, 38.807960, 40.794920]
 
-bpp_myself = [0.1935, 0.2553, 0.4074]
-psnr_myself = [27.165842, 28.450409, 31.436895]
+bpp_myself = [0.1935, 0.2553, 0.4074, 0.5314]
+psnr_myself = [27.165842, 28.450409, 31.436895, 33.45183]
 
 
 # 第一个码率点
@@ -47,6 +47,13 @@ psnr_myself_THI_02= [31.436895]
 
 bpp_myself_THI_03= [0.4128]
 psnr_myself_THI_03= [31.440132]
+
+
+# 第四个码率点
+bpp_myself_FOUR_01= [0.5314]
+psnr_myself_FOUR_01= [33.45183]
+
+
 # 添加横纵坐标与标题
 plt.xlabel('bit rate [bit/px]')
 plt.ylabel('PSNR[db]')
@@ -65,45 +72,53 @@ plt.plot(bpp_myself, psnr_myself, label='myself')
 # 单独加的对比点
 # 第一个码率点
 # 自己的psnrbmshj2018_test
-plt.scatter(bpp_myself_test, psnr_myself_test)
-plt.plot(bpp_myself_test, psnr_myself_test, label='bmshj2018_test')
+# plt.scatter(bpp_myself_test, psnr_myself_test)
+# plt.plot(bpp_myself_test, psnr_myself_test, label='bmshj2018_test')
 
-# 自己的psnrbmshj2018_01
-plt.scatter(bpp_myself_01, psnr_myself_01)
-plt.plot(bpp_myself_01, psnr_myself_01, label='bmshj2018_01')
-# 自己的psnrbmshj2018_02
-plt.scatter(bpp_myself_02, psnr_myself_02)
-plt.plot(bpp_myself_02, psnr_myself_02, label='bmshj2018_02')
-# 自己的psnrbmshj2018_03
-plt.scatter(bpp_myself_03, psnr_myself_03)
-plt.plot(bpp_myself_03, psnr_myself_03, label='bmshj2018_03')
-# 自己的psnrbmshj2018_04
-plt.scatter(bpp_myself_04, psnr_myself_04)
-plt.plot(bpp_myself_04, psnr_myself_04, label='bmshj2018_04')
+# # 自己的psnrbmshj2018_01
+# plt.scatter(bpp_myself_01, psnr_myself_01)
+# plt.plot(bpp_myself_01, psnr_myself_01, label='bmshj2018_01')
+# # 自己的psnrbmshj2018_02
+# plt.scatter(bpp_myself_02, psnr_myself_02)
+# plt.plot(bpp_myself_02, psnr_myself_02, label='bmshj2018_02')
+# # 自己的psnrbmshj2018_03
+# plt.scatter(bpp_myself_03, psnr_myself_03)
+# plt.plot(bpp_myself_03, psnr_myself_03, label='bmshj2018_03')
+# # 自己的psnrbmshj2018_04
+# plt.scatter(bpp_myself_04, psnr_myself_04)
+# plt.plot(bpp_myself_04, psnr_myself_04, label='bmshj2018_04')
 
 
 # 第二个码率点
 # 自己的psnrbmshj2018_SEC_01
-plt.scatter(bpp_myself_SEC_01, psnr_myself_SEC_01)
-plt.plot(bpp_myself_SEC_01, psnr_myself_SEC_01, label='bmshj2018_SEC_01')
+# plt.scatter(bpp_myself_SEC_01, psnr_myself_SEC_01)
+# plt.plot(bpp_myself_SEC_01, psnr_myself_SEC_01, label='bmshj2018_SEC_01')
 
-plt.scatter(bpp_myself_SEC_02, psnr_myself_SEC_02)
-plt.plot(bpp_myself_SEC_02, psnr_myself_SEC_02, label='bmshj2018_SEC_02')
+# plt.scatter(bpp_myself_SEC_02, psnr_myself_SEC_02)
+# plt.plot(bpp_myself_SEC_02, psnr_myself_SEC_02, label='bmshj2018_SEC_02')
 
-plt.scatter(bpp_myself_SEC_03, psnr_myself_SEC_03)
-plt.plot(bpp_myself_SEC_03, psnr_myself_SEC_03, label='bmshj2018_SEC_03')
+# plt.scatter(bpp_myself_SEC_03, psnr_myself_SEC_03)
+# plt.plot(bpp_myself_SEC_03, psnr_myself_SEC_03, label='bmshj2018_SEC_03')
 
 
 
 # 第三个码率点
-plt.scatter(bpp_myself_THI_01, psnr_myself_THI_01)
-plt.plot(bpp_myself_THI_01, psnr_myself_THI_01, label='bmshj2018_THI_01')
+# plt.scatter(bpp_myself_THI_01, psnr_myself_THI_01)
+# plt.plot(bpp_myself_THI_01, psnr_myself_THI_01, label='bmshj2018_THI_01')
 
-plt.scatter(bpp_myself_THI_02, psnr_myself_THI_02)
-plt.plot(bpp_myself_THI_02, psnr_myself_THI_02, label='bmshj2018_THI_02')
+# plt.scatter(bpp_myself_THI_02, psnr_myself_THI_02)
+# plt.plot(bpp_myself_THI_02, psnr_myself_THI_02, label='bmshj2018_THI_02')
 
-plt.scatter(bpp_myself_THI_03, psnr_myself_THI_03)
-plt.plot(bpp_myself_THI_03, psnr_myself_THI_03, label='bmshj2018_THI_03')
+# plt.scatter(bpp_myself_THI_03, psnr_myself_THI_03)
+# plt.plot(bpp_myself_THI_03, psnr_myself_THI_03, label='bmshj2018_THI_03')
+
+
+# 第四个码率点
+plt.scatter(bpp_myself_FOUR_01, psnr_myself_FOUR_01)
+plt.plot(bpp_myself_FOUR_01, psnr_myself_FOUR_01, label='bmshj2018_FOUR_01')
+
+
+
 #添加网格信息
 plt.grid(True, linestyle='--', alpha=0.5) #默认是True，风格设置为虚线，alpha为透明度
 plt.legend() # 为了能显示label
