@@ -601,6 +601,8 @@ def parse_args(argv):
       # "--model_path", default="bmshj2018Model/bmshj2018_THI_03",
       # "--model_path", default="bmshj2018Model/bmshj2018_FOUR_01",
       # "--model_path", default="bmshj2018Model/bmshj2018_FIVE_01",
+      # "--model_path", default="bmshj2018Model/bmshj2018_SIX_01",
+      
       
       
       
@@ -627,7 +629,9 @@ def parse_args(argv):
       # "--model_path", default="./models/bmshj2018Model/bmshj2018_THI_02",
       # "--model_path", default="./models/bmshj2018Model/bmshj2018_THI_03",
       # "--model_path", default="./models/bmshj2018Model/bmshj2018_FOUR_01",
-      "--model_path", default="./models/bmshj2018Model/bmshj2018_FIVE_01",
+      # "--model_path", default="./models/bmshj2018Model/bmshj2018_FIVE_01",
+      "--model_path", default="./models/bmshj2018Model/bmshj2018_SIX_01",
+      
       
       
       
@@ -668,7 +672,7 @@ def parse_args(argv):
       # 几个lambda0.0016、0.0032、0.0075对应滤波器数量num_filters=128
       # 0.015、0.03、0.045，对应滤波器数量num_filters=192
       # 初始0.01
-      "--lambda", type=float, default=0.03, dest="lmbda",
+      "--lambda", type=float, default=0.045, dest="lmbda",
       help="Lambda for rate-distortion tradeoff.")
   train_cmd.add_argument(
       "--train_glob", type=str, default=None,

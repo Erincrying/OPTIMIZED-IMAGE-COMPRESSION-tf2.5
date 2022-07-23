@@ -4,8 +4,8 @@ import matplotlib.pyplot as plt
 bpp_result = [0.115239, 0.185698, 0.301804, 0.468972, 0.686378, 0.966864, 1.307441, 1.727503]
 psnr_result = [27.106351, 28.679134, 30.616753, 32.554935, 34.580960, 36.720366, 38.807960, 40.794920]
 
-bpp_myself = [0.1935, 0.2553, 0.4074, 0.5314, 0.6804]
-psnr_myself = [27.165842, 28.450409, 31.436895, 33.45183, 35.177105]
+bpp_myself = [0.1935, 0.2553, 0.4074, 0.5314, 0.6804, 0.7794]
+psnr_myself = [27.165842, 28.450409, 31.436895, 33.45183, 35.177105, 36.161648 ]
 
 
 # 第一个码率点
@@ -57,6 +57,11 @@ psnr_myself_FOUR_01= [33.45183]
 # 第五个码率点
 bpp_myself_FIVE_01= [0.6804]
 psnr_myself_FIVE_01= [35.177105]
+
+
+# 第六个码率点
+bpp_myself_SIX_01= [0.7794]
+psnr_myself_SIX_01= [36.161648 ]
 
 # 添加横纵坐标与标题
 plt.xlabel('bit rate [bit/px]')
@@ -123,8 +128,12 @@ plt.plot(bpp_myself, psnr_myself, label='myself')
 
 
 # 第五个码率点
-plt.scatter(bpp_myself_FIVE_01, psnr_myself_FIVE_01)
-plt.plot(bpp_myself_FIVE_01, psnr_myself_FIVE_01, label='bmshj2018_FIVE_01')
+# plt.scatter(bpp_myself_FIVE_01, psnr_myself_FIVE_01)
+# plt.plot(bpp_myself_FIVE_01, psnr_myself_FIVE_01, label='bmshj2018_FIVE_01')
+
+# 第六个码率点
+# plt.scatter(bpp_myself_SIX_01, psnr_myself_SIX_01)
+# plt.plot(bpp_myself_SIX_01, psnr_myself_SIX_01, label='bmshj2018_SIX_01')
 
 #添加网格信息
 plt.grid(True, linestyle='--', alpha=0.5) #默认是True，风格设置为虚线，alpha为透明度
