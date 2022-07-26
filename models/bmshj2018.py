@@ -621,7 +621,7 @@ def parse_args(argv):
       # "--model_path", default="./models/bmshj2018Model/bmshj2018_01",
       # "--model_path", default="./models/bmshj2018Model/bmshj2018_02",
       # "--model_path", default="./models/bmshj2018Model/bmshj2018_03",
-      # "--model_path", default="./models/bmshj2018Model/bmshj2018_04",
+      "--model_path", default="./models/bmshj2018Model/bmshj2018_04",
       # "--model_path", default="./models/bmshj2018Model/bmshj2018_SEC_01",
       # "--model_path", default="./models/bmshj2018Model/bmshj2018_SEC_02",
       # "--model_path", default="./models/bmshj2018Model/bmshj2018_SEC_03",
@@ -630,7 +630,7 @@ def parse_args(argv):
       # "--model_path", default="./models/bmshj2018Model/bmshj2018_THI_03",
       # "--model_path", default="./models/bmshj2018Model/bmshj2018_FOUR_01",
       # "--model_path", default="./models/bmshj2018Model/bmshj2018_FIVE_01",
-      "--model_path", default="./models/bmshj2018Model/bmshj2018_SIX_01",
+      # "--model_path", default="./models/bmshj2018Model/bmshj2018_SIX_01",
       
       
       
